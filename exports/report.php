@@ -54,7 +54,7 @@ if ($mode === 'summary') {
          LEFT JOIN category cat ON c.category_id=cat.category_id
          LEFT JOIN physician ph  ON c.physician_id=ph.physician_id
          WHERE c.visit_date BETWEEN ? AND ?
-         ORDER BY c.visit_date DESC, c.consultation_id DESC"
+         ORDER BY c.visit_date DESC, c.visit_time DESC, c.consultation_id DESC"
     );
     $s->execute([$dateFrom, $dateTo]);
     $summaryRows = $s->fetchAll();

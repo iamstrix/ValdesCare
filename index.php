@@ -28,7 +28,7 @@ $recentConsults = $pdo->query(
      FROM consultation c
      JOIN patient p ON c.patient_id = p.patient_id
      LEFT JOIN category cat ON c.category_id = cat.category_id
-     ORDER BY c.visit_date DESC, c.consultation_id DESC
+     ORDER BY c.visit_date DESC, c.visit_time DESC, c.consultation_id DESC
      LIMIT 8"
 )->fetchAll();
 ?>

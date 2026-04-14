@@ -9,9 +9,9 @@
 
 :root {
   /* Brand palette */
-  --clr-primary: #1f3b9a;
-  --clr-primary-dk: #162a71;
-  --clr-primary-lt: #e5eaff;
+  --clr-primary:       #004d9e;
+  --clr-primary-dk:    #003d7e;
+  --clr-primary-lt:    #e0ecf7;
   --clr-accent: #dfc14f;
   --clr-danger: #dc2626;
   --clr-success: #16a34a;
@@ -23,7 +23,7 @@
   --clr-border: #d1d5db;
   --clr-text: #1a202c;
   --clr-text-muted: #6b7280;
-  --clr-sidebar: #1f3b9a;
+  --clr-sidebar:       #004d9e;
 
   /* Typography */
   --font-sans: 'Inter', 'Segoe UI', Arial, sans-serif;

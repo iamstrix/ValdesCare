@@ -34,7 +34,7 @@ $sql = "SELECT c.consultation_id, c.visit_date, c.chief_complaint, c.diagnosis, 
         LEFT JOIN category cat ON c.category_id = cat.category_id
         LEFT JOIN physician ph  ON c.physician_id = ph.physician_id
         WHERE " . implode(' AND ', $where) . "
-        ORDER BY c.visit_date DESC, c.consultation_id DESC
+        ORDER BY c.visit_date DESC, c.visit_time DESC, c.consultation_id DESC
         LIMIT 500";
 
 $stmt = $pdo->prepare($sql);

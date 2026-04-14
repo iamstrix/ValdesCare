@@ -164,7 +164,7 @@ require_once ROOT . '/includes/header.php';
           <label class="form-check">
             <input type="checkbox" name="is_nhts" id="is_nhts"
               <?= !empty($formData['is_nhts']) ? 'checked' : '' ?>>
-            NHTS / 4Ps
+            NHTS
           </label>
         </div>
       </div>
