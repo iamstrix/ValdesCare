@@ -2,10 +2,8 @@
 /**
  * patients/register.php
  * ---------------------
- * Two-section form:
- *   1. Household (new or existing)
- *   2. Patient demographics
- * Handles GET (display) and POST (INSERT to DB).
+ * Patient Registration Form (Single Page)
+ * Strictly adheres to the PATIENT INFORMATION RECORD layout
  */
 define('ROOT', dirname(__DIR__));
 require_once ROOT . '/db_connect.php';
@@ -17,77 +15,45 @@ $errors   = [];
 $success  = '';
 $formData = $_POST ?? [];
 
-// ── POST handler ────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $householdNo        = trim($_POST['household_no'] ?? '');
+    $patientName        = trim($_POST['patient_name'] ?? '');
+    $dob                = $_POST['dob'] ?? '';
+    $ageGroup           = $_POST['age_group'] ?? 'Adult';
+    $sex                = $_POST['sex'] ?? '';
+    $address            = trim($_POST['address'] ?? '');
+    $mobileNo           = trim($_POST['mobile_no'] ?? '');
+    $mothersMaidenName  = trim($_POST['mothers_maiden_name'] ?? '') ?: null;
+    $relationship       = trim($_POST['relationship_to_head'] ?? '');
+    $isIp               = $_POST['is_ip'] ?? 'No';
+    $nhtsStatus         = $_POST['nhts_status'] ?? 'NON-NHTS';
+    $isPhilhealth       = $_POST['is_philhealth_member'] ?? 'No';
+    $philhealthNo       = trim($_POST['philhealth_no'] ?? '') ?: null;
+    $philhealthCat      = trim($_POST['philhealth_category'] ?? '') ?: null;
+    $schoolStatus       = $_POST['school_status'] ?? 'Not in School';
 
-    // --- Household ---
-    $useExisting = !empty($_POST['existing_household_id']);
-    $householdId = null;
+    if (!$householdNo) $errors[] = 'Household number is required.';
+    if (!$patientName) $errors[] = 'Patient Name is required.';
+    if (!$dob) $errors[] = 'Date of birth is required.';
+    if (!in_array($sex, ['Male','Female'])) $errors[] = 'Please select a valid sex.';
+    if (!$address) $errors[] = 'Address is required.';
+    if (!$mobileNo) $errors[] = 'Mobile number is required.';
+    if (!$relationship) $errors[] = 'Relationship to Household Head is required.';
 
-    if ($useExisting) {
-        $householdId = (int)$_POST['existing_household_id'];
-        // verify it exists
-        $check = $pdo->prepare("SELECT household_id FROM household WHERE household_id=?");
-        $check->execute([$householdId]);
-        if (!$check->fetch()) {
-            $errors[] = 'Selected household does not exist.';
-            $householdId = null;
-        }
-    } else {
-        $barangay = trim($_POST['barangay'] ?? '');
-        $street   = trim($_POST['street_address'] ?? '');
-        $muni     = trim($_POST['municipality'] ?? 'Valdes City');
-        $isIp     = isset($_POST['is_ip'])   ? 1 : 0;
-        $isNhts   = isset($_POST['is_nhts']) ? 1 : 0;
-
-        if (!$barangay) $errors[] = 'Barangay is required.';
-        if (!$street)   $errors[] = 'Street address is required.';
-
-        if (empty($errors)) {
-            $stmt = $pdo->prepare(
-                "INSERT INTO household (barangay, street_address, municipality, is_ip, is_nhts)
-                 VALUES (?, ?, ?, ?, ?)"
-            );
-            $stmt->execute([$barangay, $street, $muni, $isIp, $isNhts]);
-            $householdId = $pdo->lastInsertId();
-        }
-    }
-
-    // --- Patient ---
-    if ($householdId && empty($errors)) {
-        $firstName   = trim($_POST['first_name']   ?? '');
-        $middleName  = trim($_POST['middle_name']  ?? '') ?: null;
-        $lastName    = trim($_POST['last_name']    ?? '');
-        $dob         = $_POST['dob']               ?? '';
-        $sex         = $_POST['sex']               ?? '';
-        $schoolStat  = $_POST['school_status']     ?? 'Not Applicable';
-        $philhealth  = trim($_POST['philhealth_no']?? '') ?: null;
-
-        if (!$firstName)  $errors[] = 'First name is required.';
-        if (!$lastName)   $errors[] = 'Last name is required.';
-        if (!$dob)        $errors[] = 'Date of birth is required.';
-        if (!in_array($sex, ['Male','Female','Prefer not to say'])) $errors[] = 'Please select a valid sex.';
-
-        if (empty($errors)) {
-            $stmt = $pdo->prepare(
-                "INSERT INTO patient
-                   (household_id, first_name, middle_name, last_name, dob, sex, school_status, philhealth_no)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-            );
-            $stmt->execute([$householdId, $firstName, $middleName, $lastName, $dob, $sex, $schoolStat, $philhealth]);
-            $newId = $pdo->lastInsertId();
-            $success = "Patient registered successfully! ID: <strong>#$newId</strong> &mdash; <a href='view.php?id=$newId'>View record</a>.";
-            $formData = []; // clear form
-        }
+    if (empty($errors)) {
+        $stmt = $pdo->prepare(
+            "INSERT INTO patient
+               (household_no, patient_name, dob, age_group, sex, address, mobile_no, mothers_maiden_name, relationship_to_head, is_ip, nhts_status, is_philhealth_member, philhealth_no, philhealth_category, school_status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->execute([
+            $householdNo, $patientName, $dob, $ageGroup, $sex, $address, $mobileNo, $mothersMaidenName, $relationship, $isIp, $nhtsStatus, $isPhilhealth, $philhealthNo, $philhealthCat, $schoolStatus
+        ]);
+        $newId = $pdo->lastInsertId();
+        $success = "Patient registered successfully! ID: <strong>#$newId</strong> &mdash; <a href='view.php?id=$newId'>View record</a>.";
+        $formData = []; // clear form
     }
 }
-
-// Fetch existing households for the dropdown
-$households = $pdo->query(
-    "SELECT household_id,
-            CONCAT('#', household_id, ' — ', street_address, ', ', barangay) AS label
-     FROM household ORDER BY household_id DESC LIMIT 200"
-)->fetchAll();
 
 require_once ROOT . '/includes/header.php';
 ?>
@@ -104,157 +70,142 @@ require_once ROOT . '/includes/header.php';
 <?php endif; ?>
 
 <form method="POST" action="">
-  <!-- ═══ SECTION 1 — HOUSEHOLD ═══ -->
   <div class="card">
-    <div class="card-title">1. Household Information</div>
-
-    <div class="form-grid">
-      <!-- Toggle: existing vs new -->
-      <div class="form-group" style="grid-column:1/-1;">
-        <label>Household</label>
-        <div class="flex gap-4" style="flex-wrap:wrap; align-items:center;">
-          <label class="form-check" style="font-weight:normal;font-size:.9rem;">
-            <input type="radio" name="household_mode" value="new" id="hh-new"
-              <?= empty($formData['existing_household_id']) ? 'checked' : '' ?>> Create new household
-          </label>
-          <label class="form-check" style="font-weight:normal;font-size:.9rem;">
-            <input type="radio" name="household_mode" value="existing" id="hh-existing"
-              <?= !empty($formData['existing_household_id']) ? 'checked' : '' ?>> Link to existing household
-          </label>
-        </div>
-      </div>
-
-      <!-- Existing household selector -->
-      <div class="form-group" id="existing-hh-wrap" style="display:none; grid-column:1/-1;">
-        <label for="existing_household_id">Existing Household</label>
-        <select name="existing_household_id" id="existing_household_id">
-          <option value="">— Select household —</option>
-          <?php foreach ($households as $hh): ?>
-            <option value="<?= $hh['household_id'] ?>"
-              <?= (($formData['existing_household_id'] ?? '') == $hh['household_id']) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($hh['label']) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-
-      <!-- New household fields -->
-      <div id="new-hh-wrap" style="display:contents;">
-        <div class="form-group">
-          <label for="barangay">Barangay *</label>
-          <input type="text" name="barangay" id="barangay" maxlength="100"
-                 value="<?= htmlspecialchars($formData['barangay'] ?? '') ?>" required>
-        </div>
-        <div class="form-group">
-          <label for="street_address">Street / Purok *</label>
-          <input type="text" name="street_address" id="street_address" maxlength="255"
-                 value="<?= htmlspecialchars($formData['street_address'] ?? '') ?>" required>
-        </div>
-        <div class="form-group">
-          <label for="municipality">Municipality</label>
-          <input type="text" name="municipality" id="municipality" maxlength="100"
-                 value="<?= htmlspecialchars($formData['municipality'] ?? 'Valdes City') ?>">
-        </div>
-        <div class="form-group" style="justify-content:flex-end; gap:.7rem; flex-direction:row; align-items:center; flex-wrap:wrap;">
-          <label class="form-check">
-            <input type="checkbox" name="is_ip" id="is_ip"
-              <?= !empty($formData['is_ip']) ? 'checked' : '' ?>>
-            Indigenous People (IP)
-          </label>
-          <label class="form-check">
-            <input type="checkbox" name="is_nhts" id="is_nhts"
-              <?= !empty($formData['is_nhts']) ? 'checked' : '' ?>>
-            NHTS
-          </label>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ SECTION 2 — PATIENT ═══ -->
-  <div class="card">
-    <div class="card-title">2. Patient Demographics</div>
+    <div class="card-title">PATIENT INFORMATION RECORD</div>
 
     <div class="form-grid">
       <div class="form-group">
-        <label for="last_name">Last Name *</label>
-        <input type="text" name="last_name" id="last_name" maxlength="80"
-               value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>" required>
+        <label for="household_no">Household no.</label>
+        <input type="text" name="household_no" id="household_no" maxlength="50"
+               value="<?= htmlspecialchars($formData['household_no'] ?? '') ?>" required>
       </div>
       <div class="form-group">
-        <label for="first_name">First Name *</label>
-        <input type="text" name="first_name" id="first_name" maxlength="80"
-               value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>" required>
-      </div>
-      <div class="form-group">
-        <label for="middle_name">Middle Name</label>
-        <input type="text" name="middle_name" id="middle_name" maxlength="80"
-               value="<?= htmlspecialchars($formData['middle_name'] ?? '') ?>">
-      </div>
-      <div class="form-group">
-        <label for="dob">Date of Birth *</label>
-        <input type="date" name="dob" id="dob"
-               max="<?= date('Y-m-d') ?>"
+        <label for="dob">Date of Birth</label>
+        <input type="date" name="dob" id="dob" max="<?= date('Y-m-d') ?>"
                value="<?= htmlspecialchars($formData['dob'] ?? '') ?>" required>
       </div>
+      
       <div class="form-group">
-        <label for="sex">Sex *</label>
-        <select name="sex" id="sex" required>
-          <option value="">— Select —</option>
-          <?php foreach (['Male','Female','Prefer not to say'] as $s): ?>
-            <option value="<?= $s ?>" <?= (($formData['sex'] ?? '') === $s) ? 'selected' : '' ?>><?= $s ?></option>
-          <?php endforeach; ?>
-        </select>
+        <label>Category (Age Group)</label>
+        <div class="flex gap-4">
+          <label class="form-check">
+            <input type="radio" name="age_group" value="Pediatric" <?= (($formData['age_group'] ?? '') === 'Pediatric') ? 'checked' : '' ?> required> Pediatric
+          </label>
+          <label class="form-check">
+            <input type="radio" name="age_group" value="Adult" <?= (($formData['age_group'] ?? 'Adult') === 'Adult') ? 'checked' : '' ?> required> Adult
+          </label>
+          <label class="form-check">
+            <input type="radio" name="age_group" value="Geriatric" <?= (($formData['age_group'] ?? '') === 'Geriatric') ? 'checked' : '' ?> required> Geriatric
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="patient_name">Patient Name</label>
+        <input type="text" name="patient_name" id="patient_name" maxlength="150"
+               value="<?= htmlspecialchars($formData['patient_name'] ?? '') ?>" required>
       </div>
       <div class="form-group">
-        <label for="school_status">School Status</label>
-        <select name="school_status" id="school_status">
-          <?php foreach (['Not Applicable','Enrolled','Out of School'] as $ss): ?>
-            <option value="<?= $ss ?>" <?= (($formData['school_status'] ?? 'Not Applicable') === $ss) ? 'selected' : '' ?>><?= $ss ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="philhealth_no">PhilHealth No.</label>
-        <input type="text" name="philhealth_no" id="philhealth_no" maxlength="20"
-               placeholder="00-000000000-0"
-               value="<?= htmlspecialchars($formData['philhealth_no'] ?? '') ?>">
+        <label>Sex</label>
+        <div class="flex gap-4">
+          <label class="form-check">
+            <input type="radio" name="sex" value="Male" <?= (($formData['sex'] ?? '') === 'Male') ? 'checked' : '' ?> required> Male
+          </label>
+          <label class="form-check">
+            <input type="radio" name="sex" value="Female" <?= (($formData['sex'] ?? '') === 'Female') ? 'checked' : '' ?> required> Female
+          </label>
+        </div>
       </div>
 
-      <div class="form-actions">
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" name="address" id="address" maxlength="255"
+               value="<?= htmlspecialchars($formData['address'] ?? '') ?>" required>
+      </div>
+      <div class="form-group">
+        <label for="mobile_no">Mobile no.</label>
+        <input type="text" name="mobile_no" id="mobile_no" maxlength="50"
+               value="<?= htmlspecialchars($formData['mobile_no'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="mothers_maiden_name">Mother's Maiden Name (Optional)</label>
+        <input type="text" name="mothers_maiden_name" id="mothers_maiden_name" maxlength="150"
+               value="<?= htmlspecialchars($formData['mothers_maiden_name'] ?? '') ?>">
+      </div>
+      <div class="form-group">
+        <label for="relationship_to_head">Relationship to Household Head</label>
+        <input type="text" name="relationship_to_head" id="relationship_to_head" maxlength="50"
+               value="<?= htmlspecialchars($formData['relationship_to_head'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label>Indigenous People (IP) Household</label>
+        <div class="flex gap-4">
+          <label class="form-check">
+            <input type="radio" name="is_ip" value="Yes" <?= (($formData['is_ip'] ?? '') === 'Yes') ? 'checked' : '' ?>> Yes
+          </label>
+          <label class="form-check">
+            <input type="radio" name="is_ip" value="No" <?= (($formData['is_ip'] ?? 'No') === 'No') ? 'checked' : '' ?>> No
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>National Household Targeting System (NHTS) Household</label>
+        <div class="flex gap-4">
+          <label class="form-check">
+            <input type="radio" name="nhts_status" value="NHTS" <?= (($formData['nhts_status'] ?? '') === 'NHTS') ? 'checked' : '' ?>> NHTS
+          </label>
+          <label class="form-check">
+            <input type="radio" name="nhts_status" value="NON-NHTS" <?= (($formData['nhts_status'] ?? 'NON-NHTS') === 'NON-NHTS') ? 'checked' : '' ?>> NON-NHTS
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label>Philhealth Member</label>
+        <div class="flex gap-4" style="align-items: center; flex-wrap: wrap;">
+          <label class="form-check">
+            <input type="radio" name="is_philhealth_member" value="Yes" <?= (($formData['is_philhealth_member'] ?? '') === 'Yes') ? 'checked' : '' ?>> Yes
+          </label>
+          <label class="form-check">
+            <input type="radio" name="is_philhealth_member" value="No" <?= (($formData['is_philhealth_member'] ?? 'No') === 'No') ? 'checked' : '' ?>> No
+          </label>
+          
+          <div style="margin-left: 1rem; display: flex; gap: 1rem; align-items: center;">
+            <label for="philhealth_no">Philhealth No.:</label>
+            <input type="text" name="philhealth_no" id="philhealth_no" maxlength="50" style="width: 150px;"
+                   value="<?= htmlspecialchars($formData['philhealth_no'] ?? '') ?>">
+            
+            <label for="philhealth_category">Category:</label>
+            <input type="text" name="philhealth_category" id="philhealth_category" maxlength="100" style="width: 150px;"
+                   value="<?= htmlspecialchars($formData['philhealth_category'] ?? '') ?>">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label>School Status (for Ages 19 and below)</label>
+        <div class="flex gap-4">
+          <label class="form-check">
+            <input type="radio" name="school_status" value="In-School" <?= (($formData['school_status'] ?? '') === 'In-School') ? 'checked' : '' ?>> In-School
+          </label>
+          <label class="form-check">
+            <input type="radio" name="school_status" value="Out of School Youth" <?= (($formData['school_status'] ?? '') === 'Out of School Youth') ? 'checked' : '' ?>> Out of School Youth
+          </label>
+          <label class="form-check">
+            <input type="radio" name="school_status" value="Not in School" <?= (($formData['school_status'] ?? 'Not in School') === 'Not in School') ? 'checked' : '' ?>> Not in School
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions" style="margin-top: 1.5rem; grid-column: 1 / -1;">
         <button type="submit" class="btn btn-primary">&#128190; Save Patient</button>
         <a href="list.php" class="btn btn-outline">Cancel</a>
       </div>
     </div>
   </div>
 </form>
-
-<script>
-// Toggle household mode
-const radios   = document.querySelectorAll('input[name="household_mode"]');
-const newWrap  = document.getElementById('new-hh-wrap');
-const exisWrap = document.getElementById('existing-hh-wrap');
-const exisSel  = document.getElementById('existing_household_id');
-const newInputs = document.querySelectorAll('#new-hh-wrap input, #new-hh-wrap select');
-
-function applyMode() {
-  const mode = document.querySelector('input[name="household_mode"]:checked').value;
-  if (mode === 'existing') {
-    exisWrap.style.display = 'block';
-    newWrap.style.display  = 'none';
-    exisSel.setAttribute('required', '');
-    newInputs.forEach(el => el.removeAttribute('required'));
-  } else {
-    exisWrap.style.display = 'none';
-    newWrap.style.display  = 'contents';
-    exisSel.removeAttribute('required');
-    document.getElementById('barangay').setAttribute('required','');
-    document.getElementById('street_address').setAttribute('required','');
-  }
-}
-
-radios.forEach(r => r.addEventListener('change', applyMode));
-applyMode();
-</script>
 
 <?php require_once ROOT . '/includes/footer.php'; ?>

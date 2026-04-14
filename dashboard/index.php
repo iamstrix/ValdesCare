@@ -2,15 +2,7 @@
 /**
  * dashboard/index.php — Analytics Dashboard
  * ------------------------------------------
- * Queries:
- *   1. Top 10 diagnoses (bar chart)
- *   2. Visits per month past 12 months (line chart)
- *   3. Sex breakdown (pie chart)
- *   4. Age group breakdown (pie chart)
- *   5. Category breakdown (doughnut chart)
- *   6. IP vs Non-IP vs NHTS (bar chart)
- *
- * Chart.js assumed at: /assets/js/chart.min.js
+ * Analytics mapped to the modified schema.
  */
 define('ROOT', dirname(__DIR__));
 require_once ROOT . '/db_connect.php';
@@ -37,14 +29,14 @@ if ($timeFilter === 'today') {
 
 $cVisitCond = str_replace('visit_date', 'c.visit_date', $visitCond);
 $patientWhere = $visitCond ? "WHERE EXISTS (SELECT 1 FROM consultation c WHERE c.patient_id = patient.patient_id {$cVisitCond})" : "";
-$hhWhere = $visitCond ? "WHERE EXISTS (SELECT 1 FROM patient p JOIN consultation c ON p.patient_id = c.patient_id WHERE p.household_id = household.household_id {$cVisitCond})" : "";
+$hhWhere = $visitCond ? "WHERE EXISTS (SELECT 1 FROM consultation c WHERE c.patient_id = p.patient_id {$cVisitCond})" : "";
 
 // ── 1. Top diagnoses ──────────────────────────────────────
 $topDx = $pdo->query(
-    "SELECT diagnosis, COUNT(*) AS cnt
+    "SELECT symptoms_diagnosis AS diagnosis, COUNT(*) AS cnt
      FROM consultation
-     WHERE diagnosis IS NOT NULL AND diagnosis <> '' {$visitCond}
-     GROUP BY diagnosis
+     WHERE symptoms_diagnosis IS NOT NULL AND symptoms_diagnosis <> '' {$visitCond}
+     GROUP BY symptoms_diagnosis
      ORDER BY cnt DESC
      LIMIT 10"
 )->fetchAll();
@@ -53,8 +45,8 @@ $topDx = $pdo->query(
 $chartLineTitle = "Monthly Visits (Last 12 Months)";
 
 if ($timeFilter === 'today') {
-    $trendQuery = "SELECT HOUR(IFNULL(visit_time,'08:00:00')) AS ym,
-                          DATE_FORMAT(IFNULL(visit_time,'08:00:00'), '%h:00 %p') AS label,
+    $trendQuery = "SELECT HOUR(IFNULL(created_at,'08:00:00')) AS ym,
+                          DATE_FORMAT(IFNULL(created_at,'08:00:00'), '%h:00 %p') AS label,
                           COUNT(*) AS cnt
                    FROM consultation
                    WHERE visit_date = CURDATE()
@@ -117,47 +109,28 @@ $sexBreakdown = $pdo->query(
     "SELECT sex, COUNT(*) AS cnt FROM patient {$patientWhere} GROUP BY sex"
 )->fetchAll();
 
-// ── 4. Age groups ─────────────────────────────────────────
+// ── 4. Age groups (Patient Categories) ─────────────────────
 $ageGroups = $pdo->query(
-    "SELECT
-       CASE
-         WHEN TIMESTAMPDIFF(YEAR,dob,CURDATE()) < 5  THEN '0–4'
-         WHEN TIMESTAMPDIFF(YEAR,dob,CURDATE()) < 13 THEN '5–12'
-         WHEN TIMESTAMPDIFF(YEAR,dob,CURDATE()) < 19 THEN '13–18'
-         WHEN TIMESTAMPDIFF(YEAR,dob,CURDATE()) < 36 THEN '19–35'
-         WHEN TIMESTAMPDIFF(YEAR,dob,CURDATE()) < 60 THEN '36–59'
-         ELSE '60+'
-       END AS age_group,
-       COUNT(*) AS cnt
+    "SELECT age_group, COUNT(*) AS cnt
      FROM patient {$patientWhere}
      GROUP BY age_group
-     ORDER BY MIN(dob)"
+     ORDER BY FIELD(age_group, 'Pediatric', 'Adult', 'Geriatric')"
 )->fetchAll();
 
-// ── 5. Category breakdown ─────────────────────────────────
-$catBreakdown = $pdo->query(
-    "SELECT IFNULL(cat.name,'Uncategorized') AS name, COUNT(*) AS cnt
-     FROM consultation c
-     LEFT JOIN category cat ON c.category_id = cat.category_id
-     WHERE 1=1 {$cVisitCond}
-     GROUP BY cat.name
-     ORDER BY cnt DESC"
-)->fetchAll();
-
-// ── 6. Demographic tags ──────────────────────────────────
+// ── 5. Demographics (Replaces Category) ────────────────────
 $demog = $pdo->query(
     "SELECT
-       SUM(is_ip=1 AND is_nhts=0)  AS ip_only,
-       SUM(is_nhts=1 AND is_ip=0)  AS nhts_only,
-       SUM(is_ip=1 AND is_nhts=1)  AS ip_and_nhts,
-       SUM(is_ip=0 AND is_nhts=0)  AS regular
-     FROM household {$hhWhere}"
+       SUM(is_ip='Yes' AND nhts_status='NON-NHTS')  AS ip_only,
+       SUM(nhts_status='NHTS' AND is_ip='No')  AS nhts_only,
+       SUM(is_ip='Yes' AND nhts_status='NHTS')  AS ip_and_nhts,
+       SUM(is_ip='No' AND nhts_status='NON-NHTS')  AS regular
+     FROM patient p {$hhWhere}"
 )->fetch();
 
 // ── Summary stats ─────────────────────────────────────────
 $totPat  = $pdo->query("SELECT COUNT(*) FROM patient {$patientWhere}")->fetchColumn();
 $totCons = $pdo->query("SELECT COUNT(*) FROM consultation WHERE 1=1 {$visitCond}")->fetchColumn();
-$totHH   = $pdo->query("SELECT COUNT(*) FROM household {$hhWhere}")->fetchColumn();
+$totHH   = $pdo->query("SELECT COUNT(DISTINCT household_no) FROM patient p {$hhWhere}")->fetchColumn();
 $thisMonth = $pdo->query("SELECT COUNT(*) FROM consultation WHERE MONTH(visit_date)=MONTH(CURDATE()) AND YEAR(visit_date)=YEAR(CURDATE()) {$visitCond}")->fetchColumn();
 
 // ── PHP → JS helpers ──────────────────────────────────────
@@ -246,7 +219,7 @@ function toggleExpandCard(el) {
     <div class="value"><?= number_format($totPat) ?></div>
   </div>
   <div class="stat-tile accent">
-    <div class="label">Households</div>
+    <div class="label">Unique Households</div>
     <div class="value"><?= number_format($totHH) ?></div>
   </div>
   <div class="stat-tile success">
@@ -281,22 +254,18 @@ function toggleExpandCard(el) {
     <div class="card-title">Age Groups</div>
     <div class="chart-box" style="height:240px;"><canvas id="chartAge"></canvas></div>
   </div>
-  <div class="card">
-    <div class="card-title">Visits by Category</div>
-    <div class="chart-box" style="height:240px;"><canvas id="chartCat"></canvas></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Household Demographics</div>
+  <div class="card" style="grid-column: span 2;">
+    <div class="card-title">Patient Demographics</div>
     <div class="chart-box" style="height:240px;"><canvas id="chartDemog"></canvas></div>
   </div>
 </div>
 
 <!-- Top diagnoses table -->
 <div class="card">
-  <div class="card-title">Diagnosis Frequency Table</div>
+  <div class="card-title">Diagnosis/Symptom Frequency Table</div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Rank</th><th>Diagnosis</th><th>Encounter Count</th></tr></thead>
+      <thead><tr><th>Rank</th><th>Diagnosis / Symptoms</th><th>Encounter Count</th></tr></thead>
       <tbody>
         <?php if (empty($topDx)): ?>
           <tr><td colspan="3" class="text-muted">No diagnoses recorded yet.</td></tr>
@@ -389,17 +358,7 @@ new Chart(document.getElementById('chartAge'), {
   options: { responsive: true, maintainAspectRatio: false }
 });
 
-/* ── 5. Category Doughnut ── */
-new Chart(document.getElementById('chartCat'), {
-  type: 'doughnut',
-  data: {
-    labels : <?= jsArray($catBreakdown, 'name') ?>,
-    datasets: [{ data: <?= jsArray($catBreakdown, 'cnt') ?>, backgroundColor: <?= palette(count($catBreakdown)) ?> }]
-  },
-  options: { responsive: true, maintainAspectRatio: false }
-});
-
-/* ── 6. Household Demographics Bar ── */
+/* ── 5. Demographics Bar ── */
 new Chart(document.getElementById('chartDemog'), {
   type: 'bar',
   data: {

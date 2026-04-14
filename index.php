@@ -14,21 +14,19 @@ require_once ROOT . '/includes/header.php';
 $stats = [];
 
 $stats['total_patients']       = $pdo->query("SELECT COUNT(*) FROM patient")->fetchColumn();
-$stats['total_households']     = $pdo->query("SELECT COUNT(*) FROM household")->fetchColumn();
+$stats['total_households']     = $pdo->query("SELECT COUNT(DISTINCT household_no) FROM patient")->fetchColumn();
 $stats['consultations_today']  = $pdo->query("SELECT COUNT(*) FROM consultation WHERE visit_date = CURDATE()")->fetchColumn();
 $stats['consultations_month']  = $pdo->query("SELECT COUNT(*) FROM consultation WHERE YEAR(visit_date)=YEAR(CURDATE()) AND MONTH(visit_date)=MONTH(CURDATE())")->fetchColumn();
-$stats['ip_households']        = $pdo->query("SELECT COUNT(*) FROM household WHERE is_ip=1")->fetchColumn();
-$stats['nhts_households']      = $pdo->query("SELECT COUNT(*) FROM household WHERE is_nhts=1")->fetchColumn();
+$stats['ip_households']        = $pdo->query("SELECT COUNT(DISTINCT household_no) FROM patient WHERE is_ip='Yes'")->fetchColumn();
+$stats['nhts_households']      = $pdo->query("SELECT COUNT(DISTINCT household_no) FROM patient WHERE nhts_status='NHTS'")->fetchColumn();
 
 // ── Recent consultations ───────────────────────────────────
 $recentConsults = $pdo->query(
-    "SELECT c.consultation_id, c.visit_date, c.chief_complaint,
-            CONCAT(p.last_name,', ',p.first_name) AS patient_name,
-            cat.name AS category
+    "SELECT c.consultation_id, c.visit_date, c.symptoms_diagnosis,
+            p.patient_name
      FROM consultation c
      JOIN patient p ON c.patient_id = p.patient_id
-     LEFT JOIN category cat ON c.category_id = cat.category_id
-     ORDER BY c.visit_date DESC, c.visit_time DESC, c.consultation_id DESC
+     ORDER BY c.visit_date DESC, c.consultation_id DESC
      LIMIT 8"
 )->fetchAll();
 ?>
@@ -86,8 +84,7 @@ $recentConsults = $pdo->query(
           <th>#</th>
           <th>Date</th>
           <th>Patient</th>
-          <th>Category</th>
-          <th>Chief Complaint</th>
+          <th>Symptoms / Diagnosis</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -97,14 +94,7 @@ $recentConsults = $pdo->query(
           <td><?= $r['consultation_id'] ?></td>
           <td><?= htmlspecialchars($r['visit_date']) ?></td>
           <td><?= htmlspecialchars($r['patient_name']) ?></td>
-          <td>
-            <?php if ($r['category']): ?>
-              <span class="badge badge-green"><?= htmlspecialchars($r['category']) ?></span>
-            <?php else: ?>
-              <span class="badge badge-gray">—</span>
-            <?php endif; ?>
-          </td>
-          <td><?= htmlspecialchars(mb_strimwidth($r['chief_complaint'], 0, 60, '…')) ?></td>
+          <td><?= htmlspecialchars(mb_strimwidth($r['symptoms_diagnosis'] ?? '—', 0, 60, '…')) ?></td>
           <td>
             <a class="btn btn-sm btn-outline"
                href="consultations/view.php?id=<?= $r['consultation_id'] ?>">View</a>

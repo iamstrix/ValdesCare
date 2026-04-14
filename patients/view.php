@@ -9,9 +9,9 @@ $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: list.php'); exit; }
 
 $stmt = $pdo->prepare(
-    "SELECT p.*, h.barangay, h.street_address, h.municipality, h.is_ip, h.is_nhts,
+    "SELECT p.*,
             TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age
-     FROM patient p JOIN household h ON p.household_id = h.household_id
+     FROM patient p
      WHERE p.patient_id = ?"
 );
 $stmt->execute([$id]);
@@ -20,12 +20,10 @@ if (!$patient) { header('Location: list.php'); exit; }
 
 // Consultation history
 $history = $pdo->prepare(
-    "SELECT c.consultation_id, c.visit_date, c.chief_complaint,
-            c.diagnosis, c.treatment, c.follow_up_date, c.is_referred,
-            cat.name AS category,
+    "SELECT c.consultation_id, c.visit_date, c.symptoms_diagnosis,
+            c.treatment, c.remarks,
             CONCAT(ph.last_name,', ',ph.first_name) AS physician
      FROM consultation c
-     LEFT JOIN category cat ON c.category_id = cat.category_id
      LEFT JOIN physician ph  ON c.physician_id = ph.physician_id
      WHERE c.patient_id = ?
      ORDER BY c.visit_date DESC"
@@ -33,7 +31,7 @@ $history = $pdo->prepare(
 $history->execute([$id]);
 $consults = $history->fetchAll();
 
-$pageTitle = htmlspecialchars($patient['last_name'] . ', ' . $patient['first_name']);
+$pageTitle = htmlspecialchars($patient['patient_name']);
 $activeNav = 'patients';
 require_once ROOT . '/includes/header.php';
 ?>
@@ -43,18 +41,18 @@ require_once ROOT . '/includes/header.php';
   <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
     <div>
       <h2 style="font-size:1.4rem; font-weight:800; color:var(--clr-primary-dk);">
-        <?= htmlspecialchars($patient['last_name'] . ', ' . $patient['first_name'])
-           . ($patient['middle_name'] ? ' ' . htmlspecialchars($patient['middle_name']) : '') ?>
+        <?= htmlspecialchars($patient['patient_name']) ?>
       </h2>
       <p class="text-muted" style="margin-top:.25rem;">
-        Patient #<?= $patient['patient_id'] ?>
+        Patient #<?= $patient['patient_id'] ?> &bull; Household #<?= htmlspecialchars($patient['household_no']) ?>
         &bull; <?= $patient['age'] ?> years old &bull; <?= htmlspecialchars($patient['sex']) ?>
+        &bull; <span class="badge badge-blue"><?= htmlspecialchars($patient['age_group']) ?></span>
       </p>
     </div>
     <div class="flex gap-2" style="flex-wrap:wrap;">
-      <?php if ($patient['is_ip']): ?>   <span class="badge badge-purple">IP</span>   <?php endif; ?>
-      <?php if ($patient['is_nhts']): ?> <span class="badge badge-amber">NHTS</span>  <?php endif; ?>
-      <span class="badge badge-<?= $patient['school_status']==='Enrolled' ? 'green' : ($patient['school_status']==='Out of School' ? 'red' : 'gray') ?>">
+      <?php if ($patient['is_ip'] === 'Yes'): ?>   <span class="badge badge-purple">IP</span>   <?php endif; ?>
+      <?php if ($patient['nhts_status'] === 'NHTS'): ?> <span class="badge badge-amber">NHTS</span>  <?php endif; ?>
+      <span class="badge badge-<?= $patient['school_status']==='In-School' ? 'green' : ($patient['school_status']==='Out of School Youth' ? 'amber' : 'gray') ?>">
         <?= htmlspecialchars($patient['school_status']) ?>
       </span>
     </div>
@@ -66,12 +64,20 @@ require_once ROOT . '/includes/header.php';
       <div><?= htmlspecialchars($patient['dob']) ?></div>
     </div>
     <div class="form-group">
-      <label>PhilHealth #</label>
-      <div><?= htmlspecialchars($patient['philhealth_no'] ?? '—') ?></div>
+      <label>PhilHealth # / Category</label>
+      <div><?= htmlspecialchars(($patient['philhealth_no'] ?: '—') . ($patient['philhealth_category'] ? ' ('.$patient['philhealth_category'].')' : '')) ?></div>
     </div>
     <div class="form-group">
       <label>Address</label>
-      <div><?= htmlspecialchars($patient['street_address'] . ', ' . $patient['barangay'] . ', ' . $patient['municipality']) ?></div>
+      <div><?= htmlspecialchars($patient['address']) ?></div>
+    </div>
+    <div class="form-group">
+      <label>Contact Number</label>
+      <div><?= htmlspecialchars($patient['mobile_no'] ?: '—') ?></div>
+    </div>
+    <div class="form-group">
+      <label>Mother's Maiden Name</label>
+      <div><?= htmlspecialchars($patient['mothers_maiden_name'] ?: '—') ?></div>
     </div>
     <div class="form-group">
       <label>Total Visits</label>
@@ -97,11 +103,10 @@ require_once ROOT . '/includes/header.php';
       <thead>
         <tr>
           <th>Date</th>
-          <th>Category</th>
-          <th>Physician</th>
-          <th>Chief Complaint</th>
-          <th>Diagnosis</th>
-          <th>Follow-up</th>
+          <th>Symptoms/Diagnosis</th>
+          <th>Treatment</th>
+          <th>Remarks</th>
+          <th>Attending Physician</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -109,18 +114,10 @@ require_once ROOT . '/includes/header.php';
         <?php foreach ($consults as $c): ?>
         <tr>
           <td style="white-space:nowrap;"><?= htmlspecialchars($c['visit_date']) ?></td>
-          <td>
-            <?php if ($c['category']): ?>
-              <span class="badge badge-green"><?= htmlspecialchars($c['category']) ?></span>
-            <?php else: ?><span class="badge badge-gray">—</span><?php endif; ?>
-          </td>
+          <td><?= htmlspecialchars(mb_strimwidth($c['symptoms_diagnosis'] ?? '—', 0, 50, '…')) ?></td>
+          <td><?= htmlspecialchars(mb_strimwidth($c['treatment'] ?? '—', 0, 50, '…')) ?></td>
+          <td><?= htmlspecialchars(mb_strimwidth($c['remarks'] ?? '—', 0, 50, '…')) ?></td>
           <td><?= htmlspecialchars($c['physician'] ?? '—') ?></td>
-          <td><?= htmlspecialchars(mb_strimwidth($c['chief_complaint'], 0, 50, '…')) ?></td>
-          <td><?= htmlspecialchars(mb_strimwidth($c['diagnosis'] ?? '—', 0, 50, '…')) ?></td>
-          <td>
-            <?= $c['follow_up_date'] ? htmlspecialchars($c['follow_up_date']) : '—' ?>
-            <?php if ($c['is_referred']): ?> <span class="badge badge-red">Referred</span><?php endif; ?>
-          </td>
           <td>
             <a href="../consultations/view.php?id=<?= $c['consultation_id'] ?>" class="btn btn-sm btn-outline">View</a>
           </td>

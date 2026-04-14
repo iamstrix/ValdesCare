@@ -11,39 +11,38 @@ $activeNav = 'patients';
 $search = trim($_GET['q'] ?? '');
 $sex    = $_GET['sex'] ?? '';
 $ip     = $_GET['is_ip'] ?? '';
-$nhts   = $_GET['is_nhts'] ?? '';
+$nhts   = $_GET['nhts_status'] ?? '';
 
 $params = [];
 $where  = ['1=1'];
 
 if ($search) {
-    $where[]  = "(p.first_name LIKE ? OR p.last_name LIKE ? OR p.philhealth_no LIKE ?)";
+    $where[]  = "(p.patient_name LIKE ? OR p.philhealth_no LIKE ?)";
     $like = "%$search%";
-    $params = array_merge($params, [$like, $like, $like]);
+    $params = array_merge($params, [$like, $like]);
 }
 if ($sex) {
     $where[]  = "p.sex = ?";
     $params[] = $sex;
 }
 if ($ip !== '') {
-    $where[]  = "h.is_ip = ?";
-    $params[] = (int)$ip;
+    $where[]  = "p.is_ip = ?";
+    $params[] = $ip;
 }
 if ($nhts !== '') {
-    $where[]  = "h.is_nhts = ?";
-    $params[] = (int)$nhts;
+    $where[]  = "p.nhts_status = ?";
+    $params[] = $nhts;
 }
 
 $sql = "SELECT p.patient_id,
-               CONCAT(p.last_name,', ',p.first_name) AS full_name,
+               p.patient_name AS full_name,
                TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age,
                p.sex, p.school_status, p.philhealth_no,
-               h.barangay, h.is_ip, h.is_nhts,
+               p.address, p.is_ip, p.nhts_status, p.age_group,
                (SELECT COUNT(*) FROM consultation c WHERE c.patient_id = p.patient_id) AS visit_count
         FROM patient p
-        JOIN household h ON p.household_id = h.household_id
         WHERE " . implode(' AND ', $where) . "
-        ORDER BY p.last_name, p.first_name";
+        ORDER BY p.patient_name";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
@@ -73,16 +72,16 @@ require_once ROOT . '/includes/header.php';
         <label for="is_ip">IP</label>
         <select name="is_ip" id="is_ip">
           <option value="">All</option>
-          <option value="1" <?= $ip==='1' ? 'selected':'' ?>>Yes</option>
-          <option value="0" <?= $ip==='0' ? 'selected':'' ?>>No</option>
+          <option value="Yes" <?= $ip==='Yes' ? 'selected':'' ?>>Yes</option>
+          <option value="No" <?= $ip==='No' ? 'selected':'' ?>>No</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="is_nhts">NHTS</label>
-        <select name="is_nhts" id="is_nhts">
+        <label for="nhts_status">NHTS</label>
+        <select name="nhts_status" id="nhts_status">
           <option value="">All</option>
-          <option value="1" <?= $nhts==='1' ? 'selected':'' ?>>Yes</option>
-          <option value="0" <?= $nhts==='0' ? 'selected':'' ?>>No</option>
+          <option value="NHTS" <?= $nhts==='NHTS' ? 'selected':'' ?>>NHTS</option>
+          <option value="NON-NHTS" <?= $nhts==='NON-NHTS' ? 'selected':'' ?>>NON-NHTS</option>
         </select>
       </div>
       <button type="submit" class="btn btn-primary btn-sm">&#128269; Filter</button>
@@ -108,8 +107,9 @@ require_once ROOT . '/includes/header.php';
           <th>Name</th>
           <th>Age</th>
           <th>Sex</th>
-          <th>Barangay</th>
+          <th>Address</th>
           <th>Tags</th>
+          <th>Category</th>
           <th>School</th>
           <th>Visits</th>
           <th>Action</th>
@@ -122,14 +122,17 @@ require_once ROOT . '/includes/header.php';
           <td class="bold"><?= htmlspecialchars($p['full_name']) ?></td>
           <td><?= $p['age'] ?></td>
           <td><?= htmlspecialchars($p['sex']) ?></td>
-          <td><?= htmlspecialchars($p['barangay']) ?></td>
+          <td><?= htmlspecialchars($p['address']) ?></td>
           <td style="white-space:nowrap;">
-            <?php if ($p['is_ip']): ?>   <span class="badge badge-purple">IP</span>   <?php endif; ?>
-            <?php if ($p['is_nhts']): ?> <span class="badge badge-amber">NHTS</span>  <?php endif; ?>
-            <?php if (!$p['is_ip'] && !$p['is_nhts']): ?> <span class="badge badge-gray">—</span> <?php endif; ?>
+            <?php if ($p['is_ip'] === 'Yes'): ?>   <span class="badge badge-purple">IP</span>   <?php endif; ?>
+            <?php if ($p['nhts_status'] === 'NHTS'): ?> <span class="badge badge-amber">NHTS</span>  <?php endif; ?>
+            <?php if ($p['is_ip'] === 'No' && $p['nhts_status'] === 'NON-NHTS'): ?> <span class="badge badge-gray">—</span> <?php endif; ?>
           </td>
           <td>
-            <span class="badge <?= $p['school_status']==='Enrolled' ? 'badge-green' : ($p['school_status']==='Out of School' ? 'badge-red' : 'badge-gray') ?>">
+             <span class="badge badge-blue"><?= htmlspecialchars($p['age_group']) ?></span>
+          </td>
+          <td>
+            <span class="badge <?= $p['school_status']==='In-School' ? 'badge-green' : ($p['school_status']==='Out of School Youth' ? 'badge-red' : 'badge-gray') ?>">
               <?= htmlspecialchars($p['school_status']) ?>
             </span>
           </td>

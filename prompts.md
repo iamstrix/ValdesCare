@@ -55,4 +55,54 @@ Encounter log entries must be sorted by encounter date, not input recency."
 
 13. "Generate an SQL query to add 20 entries of mock data to each patient with their entry dates scattered around the month of April 2026."
 
-14. "Fully describe the database's structure, relationships and everything in one paragraph. In a subsequent paragraph, generate a prompt that successfully visualizes the database's relationships, tables, etc. when inputted into an image generation LLM."
+15. "Overhaul, Changes to Patient Registration Fields
+
+Practice strict adherence to the attached image. Fields that are not present in the image, but exist in the form, must be removed E.g Vitals tab.
+
+Then, generate the query to drop affected tables, and to instantiate new ones"
+
+16. "1. Fuse
+
+2. Let's do Radio buttons for the NHTS"
+
+17. "#1062 - Duplicate entry 'Pediatrics' for key 'uq_category_name'"
+
+18. "#1054 - Unknown column 'patient_name' in 'field list'"
+
+19. "Dashboard, Encounter Log, Reports / Print tabs present issues with database retrieval"
+
+20. "Persisting error for index.php
+
+Fatal error: Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'valdescare.household' doesn't exist in C:\xampp\htdocs\ccs06-appdev\final-test\index.php:17"
+
+21. "Generate an SQL query for inputting to phypmyadmin. Satisfies the following conditions: 
+
+30 patients of Philippine-centric names, with 10-50 visit records with varying but relatively relevant values unique to each person E.g. one person has a certain condition with thematically relevant remarks across the given time period.
+
+For each unique patient, there must be visible progress seen through the inputted data towards their specific condition E.g. some people exhibit recurring diseases over the course of a month. 
+
+Disperse the visit records over the course of four (4) months in between the range of December 14, 2026 to April 14, 2026."
+
+22. "Are you able to track token generation with every output?"
+
+23. "#1452 - Cannot add or update a child row: a foreign key constraint fails (`valdescare`.`consultation`, CONSTRAINT `fk_consult_physician` FOREIGN KEY (`physician_id`) REFERENCES `physician` (`physician_id`) ON DELETE SET NULL ON UPDATE CASCADE)"
+
+24. "All the prompts during this session are to be added to prompts.md"
+
+25. "Should be in verbatim with the exception of SQL scripts."
+
+26. "Category Statistic For Pedatric, Adult, and Geriatric Patients
+
+For patient registration, add a new input field categorizing the patient to be a pediatric, adult, or a geriatric. 
+
+Generate an SQL query to create the new field, and for input of the appropriate category for each patient"
+
+27. "Reiterating a previous prompt: "Generate an SQL query for inputting to phypmyadmin. Satisfies the following conditions: 
+
+30 patients of Philippine-centric names, with 10-50 visit records with varying but relatively relevant values unique to each person E.g. one person has a certain condition with thematically relevant remarks across the given time period.
+
+The severity degree of illnesses should only be appropriate and applicable to a small out-patient clinic. E.g. You would not expect a surgery to be held inside a facility this small.
+
+For each unique patient, there must be visible progress seen through the inputted data towards their specific condition E.g. some people exhibit recurring diseases over the course of a month. 
+
+Disperse the visit records over the course of four (4) months in between the range of December 14, 2026 to April 14, 2026.""
