@@ -12,6 +12,8 @@
  */
 
 // ── Configuration ────────────────────────────────────────────
+date_default_timezone_set('Asia/Manila');
+
 define('DB_HOST',    'localhost');
 define('DB_PORT',    '3306');
 define('DB_NAME',    'valdescare');
@@ -47,6 +49,8 @@ $pdoOptions = [
 
 try {
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $pdoOptions);
+    // Sync session timezone with Asia/Manila (UTC+8)
+    $pdo->exec("SET time_zone = '+08:00'");
 } catch (PDOException $e) {
     /*
      * On a connection failure, we stop execution and show a safe error.
