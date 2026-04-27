@@ -39,6 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$address) $errors[] = 'Address is required.';
     if (!$mobileNo) $errors[] = 'Mobile number is required.';
     if (!$relationship) $errors[] = 'Relationship to Household Head is required.';
+    
+    if ($dob > date('Y-m-d')) {
+        $errors[] = 'Date of birth cannot be in the future.';
+    }
 
     if (empty($errors)) {
         $stmt = $pdo->prepare(

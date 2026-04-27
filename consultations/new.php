@@ -32,6 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$patId)    $errors[] = 'Please select a patient.';
     if (!$chiefComplaint) $errors[] = 'Chief Complaint is required.';
     if (!$diagnosis) $errors[] = 'Diagnosis is required.';
+    
+    if ($visitDate > date('Y-m-d')) {
+        $errors[] = 'Encounter date cannot be in the future.';
+    }
 
     if (empty($errors)) {
         $stmt = $pdo->prepare(
@@ -82,7 +86,8 @@ require_once ROOT . '/includes/header.php';
       <div class="form-group">
         <label for="visit_date">Date *</label>
         <input type="date" name="visit_date" id="visit_date"
-               value="<?= htmlspecialchars($_POST['visit_date'] ?? date('Y-m-d')) ?>" required>
+               value="<?= htmlspecialchars($_POST['visit_date'] ?? date('Y-m-d')) ?>" 
+               max="<?= date('Y-m-d') ?>" required>
       </div>
       <div class="form-group">
         <label for="physician_id">Attending Physician</label>
