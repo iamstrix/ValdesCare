@@ -86,9 +86,9 @@ require_once ROOT . '/includes/header.php';
   </div>
 
   <div class="form-actions" style="margin-top:.8rem;">
-    <a href="../consultations/new.php?patient_id=<?= $id ?>" class="btn btn-primary">&#128203; New Encounter</a>
-    <a href="list.php" class="btn btn-outline">&#8592; Back to List</a>
-    <a href="../exports/report.php?patient_id=<?= $id ?>" class="btn btn-outline no-print">&#128438; Print Record</a>
+    <a href="../consultations/new.php?patient_id=<?= $id ?>" class="btn btn-primary">New Encounter</a>
+    <a href="list.php" class="btn btn-outline">Back to List</a>
+    <a href="../exports/report.php?patient_id=<?= $id ?>" class="btn btn-outline no-print">Print Record</a>
   </div>
 </div>
 

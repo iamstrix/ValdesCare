@@ -145,7 +145,7 @@ require_once ROOT . '/includes/header.php';
       </div>
 
       <div class="form-actions" style="grid-column:1/-1;">
-        <button type="submit" class="btn btn-primary">&#128190; Save Encounter</button>
+        <button type="submit" class="btn btn-primary">Save Encounter</button>
         <a href="../patients/list.php" class="btn btn-outline">Cancel</a>
       </div>
     </div>

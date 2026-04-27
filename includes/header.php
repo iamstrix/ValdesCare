@@ -8,8 +8,7 @@
  *   $activeNav = 'patients';
  *   require_once ROOT . '/includes/header.php';
  */
-if (!isset($pageTitle)) $pageTitle = 'ValdesCare';
-if (!isset($activeNav)) $activeNav = '';
+if (!isset($pageTitle)) $pageTitle = 'AUF Valdes Medical Clinic';
 
 // Compute root-relative base path for assets using ROOT constant
 // ROOT is defined in every calling script as the project root dir.
@@ -25,8 +24,8 @@ $base      = $depth > 0 ? str_repeat('../', $depth) : '';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= htmlspecialchars($pageTitle) ?> — ValdesCare</title>
-  <meta name="description" content="ValdesCare — Offline Clinical Decision Support & Patient Trace Analytics">
+  <title><?= htmlspecialchars($pageTitle) ?> — Don Emiliano J. Valdes Medical Clinic</title>
+  <meta name="description" content="Angeles University Foundation Don Emiliano J. Valdes Medical Clinic — Offline Clinical Decision Support">
   <link rel="stylesheet" href="<?= $base ?>assets/css/style.css?v=<?= time() ?>">
 </head>
 <body>
@@ -34,29 +33,30 @@ $base      = $depth > 0 ? str_repeat('../', $depth) : '';
 <!-- ═══════════ SIDEBAR ═══════════ -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <h1>Valdes<span>Care</span></h1>
-    <small>Charity Clinic · Local Network</small>
+    <h1 style="font-size: 1rem; line-height: 1.2;">AUF — Don Emiliano J.<br><span>Valdes Medical Clinic</span></h1>
+    <small>University Community Health Program</small>
   </div>
+
 
   <nav class="sidebar-nav">
     <div class="nav-section">Overview</div>
-    <a href="<?= $base ?>index.php"                class="<?= $activeNav==='home'      ? 'active':'' ?>">&#128200; Dashboard</a>
+    <a href="<?= $base ?>index.php"                class="<?= $activeNav==='home'      ? 'active':'' ?>">Dashboard</a>
 
     <div class="nav-section">Patients</div>
-    <a href="<?= $base ?>patients/list.php"        class="<?= $activeNav==='patients'  ? 'active':'' ?>">&#128101; Patient List</a>
-    <a href="<?= $base ?>patients/register.php"    class="<?= $activeNav==='register'  ? 'active':'' ?>">&#10133; Register Patient</a>
+    <a href="<?= $base ?>patients/list.php"        class="<?= $activeNav==='patients'  ? 'active':'' ?>">Patient List</a>
+    <a href="<?= $base ?>patients/register.php"    class="<?= $activeNav==='register'  ? 'active':'' ?>">Register Patient</a>
 
     <div class="nav-section">Consultations</div>
-    <a href="<?= $base ?>consultations/new.php"    class="<?= $activeNav==='consult-new' ? 'active':'' ?>">&#128203; New Encounter</a>
-    <a href="<?= $base ?>consultations/list.php"   class="<?= $activeNav==='consult-list'? 'active':'' ?>">&#128196; Encounter Log</a>
+    <a href="<?= $base ?>consultations/new.php"    class="<?= $activeNav==='consult-new' ? 'active':'' ?>">New Encounter</a>
+    <a href="<?= $base ?>consultations/list.php"   class="<?= $activeNav==='consult-list'? 'active':'' ?>">Encounter Log</a>
 
     <div class="nav-section">Administration</div>
-    <a href="<?= $base ?>physicians/manage.php"    class="<?= $activeNav==='physicians' ? 'active':'' ?>">&#128084; Physicians</a>
-    <a href="<?= $base ?>exports/report.php"       class="<?= $activeNav==='reports'    ? 'active':'' ?>">&#128438; Reports / Print</a>
+    <a href="<?= $base ?>physicians/manage.php"    class="<?= $activeNav==='physicians' ? 'active':'' ?>">Physicians</a>
+    <a href="<?= $base ?>exports/report.php"       class="<?= $activeNav==='reports'    ? 'active':'' ?>">Reports / Print</a>
   </nav>
 
   <div class="sidebar-footer">
-    &copy; <?= date('Y') ?> ValdesCare v1.0
+    &copy; <?= date('Y') ?> AUF Don Emiliano J. Valdes Medical Clinic
   </div>
 </aside>
 

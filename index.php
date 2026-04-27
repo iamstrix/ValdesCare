@@ -63,11 +63,11 @@ $recentConsults = $pdo->query(
 <div class="card">
   <div class="card-title">Quick Actions</div>
   <div class="flex gap-4" style="flex-wrap:wrap;">
-    <a href="patients/register.php" class="btn btn-primary">&#10133; Register Patient</a>
-    <a href="consultations/new.php" class="btn btn-accent">&#128203; New Encounter</a>
-    <a href="patients/list.php"     class="btn btn-outline">&#128101; View Patients</a>
-    <a href="dashboard/index.php"   class="btn btn-outline">&#128200; Analytics</a>
-    <a href="exports/report.php"    class="btn btn-outline">&#128438; Print Report</a>
+    <a href="patients/register.php" class="btn btn-primary">Register Patient</a>
+    <a href="consultations/new.php" class="btn btn-accent">New Encounter</a>
+    <a href="patients/list.php"     class="btn btn-outline">View Patients</a>
+    <a href="dashboard/index.php"   class="btn btn-outline">Analytics</a>
+    <a href="exports/report.php"    class="btn btn-outline">Print Report</a>
   </div>
 </div>
 

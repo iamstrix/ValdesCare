@@ -4,8 +4,7 @@
    ============================================================ */
 
 /* ── Google Fonts (local fallback stack) ── */
-@import url('../fonts/inter.css');
-/* place Inter font files in assets/fonts/ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   /* Brand palette */
@@ -18,7 +17,7 @@
   --clr-info: #0284c7;
 
   /* Neutrals */
-  --clr-bg: #ffffff;
+  --clr-bg: #f3f4f6;
   --clr-surface: #ffffff;
   --clr-border: #d1d5db;
   --clr-text: #1a202c;
@@ -122,7 +121,9 @@ img {
   gap: .7rem;
   padding: .65rem 1.2rem;
   color: rgba(255, 255, 255, .78);
-  font-size: .9rem;
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   transition: background var(--trans), color var(--trans);
   border-left: 3px solid transparent;
 }
@@ -377,14 +378,16 @@ tbody tr:nth-child(even):hover {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: .4rem;
-  padding: .5rem 1.1rem;
+  padding: .65rem 1.4rem;
   border-radius: var(--radius);
-  font-size: .875rem;
-  font-weight: 600;
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   cursor: pointer;
   border: none;
-  transition: background var(--trans), transform var(--trans), box-shadow var(--trans);
+  transition: all var(--trans);
   text-decoration: none !important;
 }
 

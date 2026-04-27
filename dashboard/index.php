@@ -51,73 +51,102 @@ $topDxSql = "SELECT diagnosis, COUNT(*) AS cnt
              LIMIT 10";
 $topDx = execQuery($pdo, $topDxSql, $params)->fetchAll();
 
-// ── 2. Time-Trend Tracking ────────────────────────
+// ── 2. Time-Trend Tracking (Gap-filling logic) ────────────
 $chartLineTitle = "Monthly Visits (Last 12 Months)";
-$trendParams = $params;
+$trendData = []; // Will hold final {ym, label, cnt} objects
+
+// Define range based on filter
+$now = new DateTime();
+$start = null;
+$end = clone $now;
+$interval = null;
+$formatLabel = "";
+$formatYM = "";
+$periodCount = 0;
 
 if ($timeFilter === 'today') {
-    $trendQuery = "SELECT HOUR(IFNULL(created_at, CONCAT(visit_date, ' 08:00:00'))) AS ym,
-                          DATE_FORMAT(IFNULL(created_at, CONCAT(visit_date, ' 08:00:00')), '%h:00 %p') AS label,
-                          COUNT(*) AS cnt
-                   FROM consultation
-                   WHERE visit_date = CURDATE()
-                   GROUP BY ym, label
-                   ORDER BY ym";
+    $start = (clone $now)->setTime(0, 0);
+    $end = (clone $now)->setTime(23, 59);
+    $interval = new DateInterval('PT1H');
+    $formatLabel = "h:00 A";
+    $formatYM = "G"; // 0-23
+    $periodCount = 24;
     $chartLineTitle = "Hourly Visits (Today)";
-    $trendParams = []; // Filters are hardcoded for 'today' in this query
 } elseif ($timeFilter === '7days') {
-    $trendQuery = "SELECT DATE(visit_date) AS ym,
-                          DATE_FORMAT(visit_date, '%b %d') AS label,
-                          COUNT(*) AS cnt
-                   FROM consultation
-                   WHERE visit_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                   GROUP BY ym, label
-                   ORDER BY ym";
+    $start = (clone $now)->modify('-6 days');
+    $interval = new DateInterval('P1D');
+    $formatLabel = "M d";
+    $formatYM = "Y-m-d";
+    $periodCount = 7;
     $chartLineTitle = "Daily Visits (Last 7 Days)";
-    $trendParams = [];
 } elseif ($timeFilter === '30days') {
-    $trendQuery = "SELECT DATE(visit_date) AS ym,
-                          DATE_FORMAT(visit_date, '%b %d') AS label,
-                          COUNT(*) AS cnt
-                   FROM consultation
-                   WHERE visit_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-                   GROUP BY ym, label
-                   ORDER BY ym";
+    $start = (clone $now)->modify('-29 days');
+    $interval = new DateInterval('P1D');
+    $formatLabel = "M d";
+    $formatYM = "Y-m-d";
+    $periodCount = 30;
     $chartLineTitle = "Daily Visits (Last 30 Days)";
-    $trendParams = [];
 } elseif ($timeFilter === '6months') {
-    $trendQuery = "SELECT DATE_FORMAT(visit_date,'%Y-%m') AS ym,
-                          DATE_FORMAT(visit_date,'%b %Y') AS label,
-                          COUNT(*) AS cnt
-                   FROM consultation
-                   WHERE visit_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-                   GROUP BY ym, label
-                   ORDER BY ym";
+    $start = (clone $now)->modify('-5 months')->modify('first day of this month');
+    $interval = new DateInterval('P1M');
+    $formatLabel = "M Y";
+    $formatYM = "Y-m";
+    $periodCount = 6;
     $chartLineTitle = "Monthly Visits (Last 6 Months)";
-    $trendParams = [];
 } elseif ($timeFilter === 'custom' && $startDate && $endDate) {
-    $trendQuery = "SELECT DATE(visit_date) AS ym,
-                          DATE_FORMAT(visit_date, '%b %d, %Y') AS label,
-                          COUNT(*) AS cnt
-                   FROM consultation
-                   WHERE visit_date >= :start_date AND visit_date <= :end_date
-                   GROUP BY ym, label
-                   ORDER BY ym";
+    $start = new DateTime($startDate);
+    $end = new DateTime($endDate);
+    $interval = new DateInterval('P1D');
+    $formatLabel = "M d, Y";
+    $formatYM = "Y-m-d";
+    $periodCount = $start->diff($end)->days + 1;
     $chartLineTitle = "Daily Visits (Custom Range)";
 } else {
-    $trendCond = $visitCond ?: " AND visit_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)";
-    $trendQuery = "SELECT DATE_FORMAT(visit_date,'%Y-%m') AS ym,
-                          DATE_FORMAT(visit_date,'%b %Y') AS label,
-                          COUNT(*) AS cnt
-                   FROM consultation
-                   WHERE 1=1 {$trendCond}
-                   GROUP BY ym, label
-                   ORDER BY ym";
-    if ($timeFilter === 'all') {
-        $chartLineTitle = "All Time Visits";
-    }
+    $start = (clone $now)->modify('-11 months')->modify('first day of this month');
+    $interval = new DateInterval('P1M');
+    $formatLabel = "M Y";
+    $formatYM = "Y-m";
+    $periodCount = 12;
+    if ($timeFilter === 'all') $chartLineTitle = "Service Volume (All Time)";
 }
-$visitsByMonth = execQuery($pdo, $trendQuery, $trendParams)->fetchAll();
+
+// 1. Generate all labels for the period
+$labels = [];
+$timeline = new DatePeriod($start, $interval, $periodCount - 1);
+foreach ($timeline as $dt) {
+    $labels[$dt->format($formatYM)] = [
+        'ym' => $dt->format($formatYM),
+        'label' => $dt->format($formatLabel),
+        'cnt' => 0
+    ];
+}
+// Add the end point explicitly to handle edge cases/DST
+$labels[$end->format($formatYM)] = [
+    'ym' => $end->format($formatYM),
+    'label' => $end->format($formatLabel),
+    'cnt' => 0
+];
+
+// 2. Fetch actual counts
+if ($timeFilter === 'today') {
+    $sql = "SELECT HOUR(IFNULL(created_at, CONCAT(visit_date, ' 08:00:00'))) AS key_val, COUNT(*) AS cnt 
+            FROM consultation WHERE visit_date = CURDATE() GROUP BY key_val";
+    $dbData = $pdo->query($sql)->fetchAll(PDO::FETCH_KEY_PAIR);
+} elseif (in_array($timeFilter, ['7days', '30days', 'custom'])) {
+    $c = $visitCond ?: " AND visit_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+    $sql = "SELECT DATE(visit_date) AS key_val, COUNT(*) AS cnt FROM consultation WHERE 1=1 {$c} GROUP BY key_val";
+    $dbData = execQuery($pdo, $sql, $params)->fetchAll(PDO::FETCH_KEY_PAIR);
+} else {
+    $c = $visitCond ?: " AND visit_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)";
+    $sql = "SELECT DATE_FORMAT(visit_date, '%Y-%m') AS key_val, COUNT(*) AS cnt FROM consultation WHERE 1=1 {$c} GROUP BY key_val";
+    $dbData = execQuery($pdo, $sql, $params)->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
+// 3. Merge DB data into labels
+foreach ($dbData as $k => $v) {
+    if (isset($labels[$k])) $labels[$k]['cnt'] = (int)$v;
+}
+$visitsByMonth = array_values($labels);
 
 // ── 3. Sex breakdown ─────────────────────────────────────
 $sexSql = "SELECT sex, COUNT(*) AS cnt FROM patient {$patientWhere} GROUP BY sex";
@@ -141,11 +170,8 @@ $demog = execQuery($pdo, $demogSql, $params)->fetch();
 
 // ── Summary stats ─────────────────────────────────────────
 $totPat  = execQuery($pdo, "SELECT COUNT(*) FROM patient {$patientWhere}", $params)->fetchColumn();
-$totCons = execQuery($pdo, "SELECT COUNT(*) FROM consultation WHERE 1=1 {$visitCond}", $params)->fetchColumn();
 $totHH   = execQuery($pdo, "SELECT COUNT(DISTINCT household_no) FROM patient p {$hhWhere}", $params)->fetchColumn();
-
-$thisMonthSql = "SELECT COUNT(*) FROM consultation WHERE MONTH(visit_date)=MONTH(CURDATE()) AND YEAR(visit_date)=YEAR(CURDATE()) {$visitCond}";
-$thisMonth = execQuery($pdo, $thisMonthSql, $params)->fetchColumn();
+$totCons = execQuery($pdo, "SELECT COUNT(*) FROM consultation WHERE 1=1 {$visitCond}", $params)->fetchColumn();
 
 // ── PHP → JS helpers ──────────────────────────────────────
 function jsArray(array $data, string $key): string {
@@ -160,6 +186,12 @@ function palette(int $n): string {
 
 require_once ROOT . '/includes/header.php';
 ?>
+
+<!-- Context -->
+<div style="margin-bottom: 1.5rem;">
+  <h1 style="font-size: 1.8rem; font-weight: 700; color: var(--clr-primary-dk);">Analytics Dashboard</h1>
+  <p class="text-muted">Clinical data overview and service performance metrics.</p>
+</div>
 
 <!-- Time Filter -->
 <form method="GET" class="card" style="margin-bottom: 1.4rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
@@ -240,10 +272,6 @@ function toggleExpandCard(el) {
     <div class="label">Total Encounters</div>
     <div class="value"><?= number_format($totCons) ?></div>
   </div>
-  <div class="stat-tile info">
-    <div class="label">This Month</div>
-    <div class="value"><?= number_format($thisMonth) ?></div>
-  </div>
 </div>
 
 <!-- Row 1: Top diagnoses + Monthly visits -->
@@ -258,8 +286,12 @@ function toggleExpandCard(el) {
   </div>
 </div>
 
-<!-- Row 2: Pie / doughnut charts -->
-<div class="chart-grid">
+<!-- Row 2: Demographics, Sex, Age -->
+<div class="chart-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+  <div class="card">
+    <div class="card-title">Patient Demographics</div>
+    <div class="chart-box" style="height:240px;"><canvas id="chartDemog"></canvas></div>
+  </div>
   <div class="card">
     <div class="card-title">Sex Breakdown</div>
     <div class="chart-box" style="height:240px;"><canvas id="chartSex"></canvas></div>
@@ -270,41 +302,35 @@ function toggleExpandCard(el) {
   </div>
 </div>
 
-<!-- Row 3: Wide Demographics -->
+<!-- Row 3: Table -->
 <div class="chart-grid" style="grid-template-columns: 1fr;">
-  <div class="card">
-    <div class="card-title">Patient Demographics</div>
-    <div class="chart-box" style="height:300px;"><canvas id="chartDemog"></canvas></div>
-  </div>
-</div>
-
-<!-- Top diagnoses table -->
-<div class="card">
-  <div class="card-title">Diagnosis/Symptom Frequency Table</div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Rank</th><th>Diagnosis / Symptoms</th><th>Encounter Count</th></tr></thead>
-      <tbody>
-        <?php if (empty($topDx)): ?>
-          <tr><td colspan="3" class="text-muted">No diagnoses recorded yet.</td></tr>
-        <?php else: ?>
-          <?php foreach ($topDx as $rank => $row): ?>
-          <tr>
-            <td><?= $rank+1 ?></td>
-            <td><?= htmlspecialchars($row['diagnosis']) ?></td>
-            <td><strong><?= $row['cnt'] ?></strong></td>
-          </tr>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </tbody>
-    </table>
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-title">Diagnosis/Symptom Frequency Table</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rank</th><th>Diagnosis / Symptoms</th><th>Encounter Count</th></tr></thead>
+        <tbody>
+          <?php if (empty($topDx)): ?>
+            <tr><td colspan="3" class="text-muted">No diagnoses recorded yet.</td></tr>
+          <?php else: ?>
+            <?php foreach ($topDx as $rank => $row): ?>
+            <tr>
+              <td><?= $rank+1 ?></td>
+              <td><?= htmlspecialchars($row['diagnosis']) ?></td>
+              <td><strong><?= $row['cnt'] ?></strong></td>
+            </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <!-- Chart.js — loaded locally -->
 <script src="<?= str_repeat('../',1) ?>assets/js/chart.min.js"></script>
 <script>
-Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.font.family = "'Inter', 'Segoe UI', Arial, sans-serif";
 Chart.defaults.plugins.legend.position = 'bottom';
 
 const PRIMARY = '#004d9e';
@@ -401,4 +427,4 @@ new Chart(document.getElementById('chartDemog'), {
 });
 </script>
 
-<?php require_once ROOT . '/includes/header.php'; ?>
+<?php require_once ROOT . '/includes/footer.php'; ?>

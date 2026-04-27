@@ -69,7 +69,7 @@ require_once ROOT . '/includes/header.php';
         <input type="text" name="license_no" id="license_no" maxlength="30">
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">&#10133; Add Physician</button>
+        <button type="submit" class="btn btn-primary">Add Physician</button>
       </div>
     </div>
   </form>

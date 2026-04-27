@@ -84,7 +84,7 @@ require_once ROOT . '/includes/header.php';
           <option value="NON-NHTS" <?= $nhts==='NON-NHTS' ? 'selected':'' ?>>NON-NHTS</option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary btn-sm">&#128269; Filter</button>
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
       <a href="list.php" class="btn btn-outline btn-sm">Reset</a>
     </div>
   </form>
@@ -93,7 +93,7 @@ require_once ROOT . '/includes/header.php';
 <div class="card">
   <div class="card-title" style="justify-content:space-between; display:flex; align-items:center; flex-wrap:wrap; gap:.5rem;">
     <span>Patients <span style="font-weight:400;color:var(--clr-text-muted);font-size:.85rem;">(<?= count($patients) ?> found)</span></span>
-    <a href="register.php" class="btn btn-primary btn-sm">&#10133; Register New</a>
+    <a href="register.php" class="btn btn-primary btn-sm">Register New</a>
   </div>
 
   <?php if (empty($patients)): ?>

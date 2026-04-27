@@ -63,35 +63,34 @@ if ($mode === 'summary') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ValdesCare Report</title>
+  <title>Report — Don Emiliano J. Valdes Medical Clinic</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #111; background: #f0f0f0; }
     .report-page { background: #fff; max-width: 1000px; margin: 1.5rem auto; padding: 2rem; box-shadow: 0 0 16px rgba(0,0,0,.12); }
-    .report-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #0f6b5c; padding-bottom:.8rem; margin-bottom:1rem; }
-    .clinic-name { font-size:1.3rem; font-weight:800; color:#0f6b5c; }
+    .report-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #004d9e; padding-bottom:.8rem; margin-bottom:1rem; }
+    .clinic-name { font-size:1.3rem; font-weight:800; color:#004d9e; }
     .clinic-sub  { font-size:.8rem; color:#555; }
     .report-meta { text-align:right; font-size:.78rem; color:#555; }
-    h2 { font-size:1rem; margin-bottom:.5rem; color:#0f6b5c; }
+    h2 { font-size:1rem; margin-bottom:.5rem; color:#004d9e; }
     .info-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem 1rem; margin-bottom:1rem; border:1px solid #ddd; padding:.8rem; border-radius:6px; }
     .info-item label { display:block; font-size:.7rem; font-weight:700; color:#888; text-transform:uppercase; }
     .info-item span  { font-size:.9rem; font-weight:600; }
     table { width:100%; border-collapse:collapse; margin-top:.5rem; font-size:.8rem; }
-    th { background:#0f6b5c; color:#fff; padding:.4rem .5rem; text-align:left; }
+    th { background:#004d9e; color:#fff; padding:.4rem .5rem; text-align:left; }
     td { padding:.38rem .5rem; border-bottom:1px solid #eee; vertical-align:top; }
     tr:nth-child(even) td { background:#f9f9f9; }
     .badge { display:inline-block; padding:.1rem .4rem; border-radius:99px; font-size:.68rem; font-weight:700; }
     .badge-ip   { background:#ede9fe; color:#7c3aed; }
     .badge-nhts { background:#fef3c7; color:#b45309; }
     .no-print-bar { display:flex; gap:.5rem; justify-content:center; padding: .8rem; margin-bottom:.5rem; flex-wrap:wrap; }
-    .btn { display:inline-block; padding:.4rem 1rem; border-radius:6px; font-size:.82rem; font-weight:600; cursor:pointer; border:none; }
-    .btn-primary { background:#0f6b5c; color:#fff; }
-    .btn-outline { background:#fff; border:1.5px solid #0f6b5c; color:#0f6b5c; }
-    a.btn { text-decoration:none; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding:.6rem 1.2rem; border-radius:6px; font-size:.82rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; border:none; text-decoration:none !important; }
+    .btn-primary { background:#004d9e; color:#fff; }
+    .btn-outline { background:#fff; border:1.5px solid #004d9e; color:#004d9e; }
     .filter-form { background:#fff; max-width:900px; margin: 0 auto 1rem; padding:1rem; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1); display:flex; gap:.5rem; flex-wrap:wrap; align-items:flex-end; }
     .filter-form label { display:block; font-size:.75rem; font-weight:600; color:#555; }
     .filter-form input[type="date"] { padding:.3rem .5rem; border:1.5px solid #ccc; border-radius:5px; font-size:.82rem; }
-    .section-title { font-size:.9rem; font-weight:700; background:#e8f5f3; padding:.4rem .7rem; border-left:4px solid #0f6b5c; margin:.8rem 0 .3rem; }
+    .section-title { font-size:.9rem; font-weight:700; background:#e0ecf7; padding:.4rem .7rem; border-left:4px solid #004d9e; margin:.8rem 0 .3rem; }
     @media print {
       .no-print-bar, .filter-form { display:none !important; }
       body { background:#fff; }
@@ -103,12 +102,12 @@ if ($mode === 'summary') {
 
 <!-- Controls (hidden on print) -->
 <div class="no-print-bar">
-  <button class="btn btn-primary" onclick="window.print()">&#128438; Print / Save as PDF</button>
+  <button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
   <?php if ($mode === 'patient'): ?>
-    <a href="report.php" class="btn btn-outline">&#128196; Summary Report</a>
-    <a href="../patients/view.php?id=<?= $patientId ?>" class="btn btn-outline">&#8592; Back to Patient</a>
+    <a href="report.php" class="btn btn-outline">Summary Report</a>
+    <a href="../patients/view.php?id=<?= $patientId ?>" class="btn btn-outline">Back to Patient</a>
   <?php else: ?>
-    <a href="../index.php" class="btn btn-outline">&#8592; Back to Dashboard</a>
+    <a href="../index.php" class="btn btn-outline">Back to Dashboard</a>
   <?php endif; ?>
 </div>
 
@@ -123,7 +122,7 @@ if ($mode === 'summary') {
     <label>To</label>
     <input type="date" name="date_to" value="<?= htmlspecialchars($dateTo) ?>">
   </div>
-  <button type="submit" class="btn btn-primary">&#128269; Filter</button>
+  <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 <?php endif; ?>
 
@@ -131,7 +130,7 @@ if ($mode === 'summary') {
   <!-- Header -->
   <div class="report-header">
     <div>
-      <div class="clinic-name">&#9877; ValdesCare Charity Clinic</div>
+      <div class="clinic-name">Angeles University Foundation Don Emiliano J. Valdes Medical Clinic</div>
       <div class="clinic-sub">University-Based Community Health Program</div>
       <div class="clinic-sub">Offline Clinical Decision Support System</div>
     </div>
@@ -147,51 +146,25 @@ if ($mode === 'summary') {
   <!-- ═══ PATIENT REPORT ═══ -->
   <h2>Patient Record</h2>
   <div class="info-grid">
-    <div class="info-item">
-      <label>Full Name</label>
-      <span><?= htmlspecialchars($patient['patient_name']) ?></span>
-    </div>
-    <div class="info-item">
-      <label>Patient ID / HH No.</label>
-      <span>#<?= $patient['patient_id'] ?> / <?= htmlspecialchars($patient['household_no']) ?></span>
-    </div>
-    <div class="info-item">
-      <label>Date of Birth</label>
-      <span><?= htmlspecialchars($patient['dob']) ?> (<?= $patient['age'] ?> yrs)</span>
-    </div>
-    <div class="info-item">
-      <label>Sex</label>
-      <span><?= htmlspecialchars($patient['sex']) ?></span>
-    </div>
-    <div class="info-item">
-      <label>PhilHealth #</label>
-      <span><?= htmlspecialchars($patient['philhealth_no'] ?? '—') ?></span>
-    </div>
-    <div class="info-item">
-      <label>School Status</label>
-      <span><?= htmlspecialchars($patient['school_status']) ?></span>
-    </div>
-    <div class="info-item" style="grid-column:1/-1;">
-      <label>Address</label>
-      <span><?= htmlspecialchars($patient['address']) ?></span>
-    </div>
-    <div class="info-item">
-      <label>Demographics</label>
+    <div class="info-item"><label>Full Name</label><span><?= htmlspecialchars($patient['patient_name']) ?></span></div>
+    <div class="info-item"><label>Patient ID</label><span>#<?= $patient['patient_id'] ?></span></div>
+    <div class="info-item"><label>Household #</label><span><?= htmlspecialchars($patient['household_no']) ?></span></div>
+    <div class="info-item"><label>Birth Date</label><span><?= htmlspecialchars($patient['dob']) ?> (<?= $patient['age'] ?>y)</span></div>
+    <div class="info-item"><label>Sex</label><span><?= htmlspecialchars($patient['sex']) ?></span></div>
+    <div class="info-item"><label>Mobile</label><span><?= htmlspecialchars($patient['mobile_no'] ?: '—') ?></span></div>
+    <div class="info-item" style="grid-column: span 2;"><label>Address</label><span><?= htmlspecialchars($patient['address']) ?></span></div>
+    <div class="info-item"><label>Status</label>
       <span>
-        <?= $patient['is_ip'] === 'Yes'   ? '<span class="badge badge-ip">IP</span> ' : '' ?>
-        <?= $patient['nhts_status'] === 'NHTS' ? '<span class="badge badge-nhts">NHTS</span>' : '' ?>
-        <?= ($patient['is_ip'] === 'No' && $patient['nhts_status'] === 'NON-NHTS') ? '—' : '' ?>
+        <?= $patient['is_ip'] === 'Yes' ? 'IP ' : '' ?>
+        <?= $patient['nhts_status'] === 'NHTS' ? 'NHTS ' : '' ?>
+        <?= ($patient['is_ip']==='No' && $patient['nhts_status']==='NON-NHTS') ? 'Regular' : '' ?>
       </span>
-    </div>
-    <div class="info-item">
-      <label>Total Visits</label>
-      <span><?= count($consults) ?></span>
     </div>
   </div>
 
   <div class="section-title">Consultation History</div>
   <?php if (empty($consults)): ?>
-    <p style="color:#888; font-style:italic;">No consultations recorded.</p>
+    <p style="color:#888; font-style:italic;">No consultations recorded for this patient.</p>
   <?php else: ?>
   <table>
     <thead>

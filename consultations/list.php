@@ -55,7 +55,7 @@ require_once ROOT . '/includes/header.php';
         <label for="date_to">To</label>
         <input type="date" name="date_to" id="date_to" value="<?= htmlspecialchars($dateTo) ?>">
       </div>
-      <button type="submit" class="btn btn-primary btn-sm">&#128269; Filter</button>
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
       <a href="list.php" class="btn btn-outline btn-sm">Reset</a>
     </div>
   </form>
@@ -64,7 +64,7 @@ require_once ROOT . '/includes/header.php';
 <div class="card">
   <div class="card-title" style="justify-content:space-between; display:flex; flex-wrap:wrap; gap:.5rem;">
     <span>Encounters <span style="font-weight:400;color:var(--clr-text-muted);font-size:.85rem;">(<?= count($rows) ?>)</span></span>
-    <a href="new.php" class="btn btn-primary btn-sm">&#10133; New Encounter</a>
+    <a href="new.php" class="btn btn-primary btn-sm">New Encounter</a>
   </div>
 
   <?php if (empty($rows)): ?>

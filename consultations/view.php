@@ -31,15 +31,15 @@ require_once ROOT . '/includes/header.php';
 ?>
 
 <div class="no-print flex gap-2" style="margin-bottom:1rem; flex-wrap:wrap;">
-  <a href="list.php" class="btn btn-outline btn-sm">&#8592; Encounter Log</a>
-  <a href="../patients/view.php?id=<?= $c['patient_id'] ?>" class="btn btn-outline btn-sm">&#128100; Patient Record</a>
-  <button onclick="window.print()" class="btn btn-outline btn-sm">&#128438; Print</button>
+  <a href="list.php" class="btn btn-outline btn-sm">Encounter Log</a>
+  <a href="../patients/view.php?id=<?= $c['patient_id'] ?>" class="btn btn-outline btn-sm">Patient Record</a>
+  <button onclick="window.print()" class="btn btn-outline btn-sm">Print</button>
 </div>
 
 <!-- Print header -->
 <div style="display:none;" class="print-header">
-  <h2 style="text-align:center; font-size:1.2rem;">VALDESCARE — Consultation Record</h2>
-  <p style="text-align:center; font-size:.85rem;">Encounter #<?= $id ?> · <?= htmlspecialchars($c['visit_date']) ?></p>
+  <h2 style="text-align:center; font-size:1rem;">AUF DON EMILIANO J. VALDES MEDICAL CLINIC</h2>
+  <p style="text-align:center; font-size:.85rem;">Consultation Record #<?= $id ?> · <?= htmlspecialchars($c['visit_date']) ?></p>
   <hr>
 </div>
 
