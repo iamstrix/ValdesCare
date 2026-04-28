@@ -667,3 +667,11 @@ tbody tr:nth-child(even):hover {
 .bold {
   font-weight: 700;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+.card {
+  scroll-margin-top: 85px; /* Account for sticky header */
+}
