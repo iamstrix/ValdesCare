@@ -63,11 +63,24 @@ $consults = $history->fetchAll();
 $pageTitle = htmlspecialchars($patient['patient_name']);
 $activeNav = 'patients';
 
-// ── Visit trend data (Last 12 months) ──────────────────────
+// ── Chart Range Logic ──────────────────────────────────────
+$chartFilter = $_GET['chart_filter'] ?? '12months';
+$chartInterval = 11; // Default: 12 months (including current)
+$chartTitle = "Last 12 Months";
+
+if ($chartFilter === '6months') {
+    $chartInterval = 5;
+    $chartTitle = "Last 6 Months";
+} elseif ($chartFilter === '2years') {
+    $chartInterval = 23;
+    $chartTitle = "Last 2 Years";
+}
+
+// ── Visit trend data ───────────────────────────────────────
 $trendSql = "
     SELECT DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as cnt
     FROM consultation
-    WHERE patient_id = ? AND visit_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
+    WHERE patient_id = ? AND visit_date >= DATE_SUB(CURDATE(), INTERVAL $chartInterval MONTH)
     GROUP BY ym
     ORDER BY ym ASC
 ";
@@ -75,9 +88,9 @@ $trendStmt = $pdo->prepare($trendSql);
 $trendStmt->execute([$id]);
 $trendRaw = $trendStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-// Gap-fill last 12 months to ensure a continuous line
+// Gap-fill based on interval
 $trendData = [];
-for ($i = 11; $i >= 0; $i--) {
+for ($i = $chartInterval; $i >= 0; $i--) {
     $m = date('Y-m', strtotime("-$i months"));
     $label = date('M Y', strtotime("-$i months"));
     $trendData[] = [
@@ -187,7 +200,22 @@ function saveRecordPdf() {
 
 <!-- Visit Trend Visualization -->
 <div class="card">
-  <div class="card-title">Visit Frequency (Last 12 Months)</div>
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="card-title" style="margin:0;">Visit Frequency (<?= $chartTitle ?>)</div>
+    <form method="GET" class="no-print" style="margin:0;">
+      <input type="hidden" name="id" value="<?= $id ?>">
+      <!-- Preserve history filters if any -->
+      <input type="hidden" name="time_filter" value="<?= htmlspecialchars($timeFilter) ?>">
+      <input type="hidden" name="start_date" value="<?= htmlspecialchars($startDate) ?>">
+      <input type="hidden" name="end_date" value="<?= htmlspecialchars($endDate) ?>">
+      
+      <select name="chart_filter" onchange="this.form.submit()" style="padding: 0.3rem 0.5rem; font-size: 0.8rem; border: 1px solid #ddd; border-radius: 4px; background: #f9fafb; color: #374151; cursor: pointer;">
+        <option value="6months"  <?= $chartFilter==='6months'  ? 'selected':'' ?>>Last 6 Months</option>
+        <option value="12months" <?= $chartFilter==='12months' ? 'selected':'' ?>>Last 12 Months</option>
+        <option value="2years"   <?= $chartFilter==='2years'   ? 'selected':'' ?>>Last 2 Years</option>
+      </select>
+    </form>
+  </div>
   <div class="chart-box" style="height: 220px; margin-top: 1rem;">
     <canvas id="visitChart"></canvas>
   </div>
