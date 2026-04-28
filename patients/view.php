@@ -259,7 +259,7 @@ function saveRecordPdf() {
     <input type="hidden" name="id" value="<?= $id ?>">
     
     <div class="form-group" style="flex: 1; min-width: 200px; max-width: 300px;">
-      <label style="font-size: 0.75rem;">Time Range Filter (Global)</label>
+      <label style="font-size: 0.75rem;">Time Range Filter</label>
       <select name="time_filter" onchange="toggleCustomDates(this.value)">
         <option value="all"      <?= $timeFilter==='all'     ? 'selected':'' ?>>All Time</option>
         <option value="today"    <?= $timeFilter==='today'   ? 'selected':'' ?>>Today</option>
