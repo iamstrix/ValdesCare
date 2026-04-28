@@ -699,19 +699,20 @@ html {
 
 /* ── Specific 'Back to Hub' Style matching report.php ── */
 .btn-back-hub {
-  background: #fff !important;
+  background: var(--clr-primary) !important;
   border: 1.5px solid var(--clr-primary) !important;
-  color: var(--clr-primary) !important;
+  color: #fff !important;
   padding: .6rem 1.2rem !important;
   border-radius: 6px !important;
   font-size: .82rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.04em !important;
-  box-shadow: none !important;
+  box-shadow: var(--shadow) !important;
   transform: none !important;
 }
 
 .btn-back-hub:hover {
-  background: var(--clr-primary-lt) !important;
+  background: var(--clr-primary-dk) !important;
+  color: #fff !important;
   text-decoration: none !important;
 }
