@@ -40,6 +40,13 @@ $rows = $stmt->fetchAll();
 require_once ROOT . '/includes/header.php';
 ?>
 
+<div style="margin-bottom: 1.2rem;" class="no-print">
+  <a href="../index.php" class="btn btn-sm btn-outline">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    Back to Dashboard
+  </a>
+</div>
+
 <div class="card" style="margin-bottom:1rem;">
   <form method="GET">
     <div style="display:flex; gap:.75rem; flex-wrap:wrap; align-items:flex-end;">

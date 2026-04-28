@@ -191,7 +191,13 @@ require_once ROOT . '/includes/header.php';
 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
   <div>
     <h1 style="font-size: 1.8rem; font-weight: 700; color: var(--clr-primary-dk);">Analytics Dashboard</h1>
-    <p class="text-muted">Clinical data overview and service performance metrics.</p>
+    <div class="flex gap-2 items-center mt-1 no-print">
+      <a href="../index.php" class="btn btn-sm btn-outline">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Back to Dashboard
+      </a>
+      <p class="text-muted" style="margin:0;">Clinical data overview and service performance metrics.</p>
+    </div>
   </div>
   <div class="flex gap-2 no-print">
     <button onclick="window.print()" class="btn btn-outline" style="display: flex; align-items: center; gap: 0.5rem;">
