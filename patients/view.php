@@ -142,11 +142,32 @@ require_once ROOT . '/includes/header.php';
   </div>
 
   <div class="form-actions" style="margin-top:.8rem;">
-    <a href="../consultations/new.php?patient_id=<?= $id ?>" class="btn btn-primary">New Encounter</a>
-    <a href="list.php" class="btn btn-outline">Back to List</a>
-    <a href="../exports/report.php?patient_id=<?= $id ?>" class="btn btn-outline no-print">Print Record</a>
+    <a href="../consultations/new.php?patient_id=<?= $id ?>" class="btn btn-primary no-print">New Encounter</a>
+    <a href="list.php" class="btn btn-outline no-print">Back to List</a>
+    <button onclick="window.print()" class="btn btn-outline">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-10 0v5h8v-5m-9-5h.01"></path></svg>
+      Print Record
+    </button>
   </div>
 </div>
+
+<style media="print">
+  .sidebar, .topbar, form, .no-print, .btn:not(button) { display: none !important; }
+  .main-wrap { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+  .page-body { padding: 0 !important; }
+  .card { 
+      break-inside: avoid; 
+      border: 1px solid #eee !important; 
+      box-shadow: none !important;
+      margin-bottom: 1.5rem !important;
+      padding: 1rem !important;
+  }
+  .form-grid { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 1rem !important; }
+  .chart-box { height: 300px !important; }
+  body { background: white !important; font-size: 10pt; color: black !important; }
+  th:last-child, td:last-child { display: none !important; } /* Hide Action column */
+  .badge { border: 1px solid #ccc !important; color: black !important; background: transparent !important; }
+</style>
 
 <!-- Visit Trend Visualization -->
 <div class="card">

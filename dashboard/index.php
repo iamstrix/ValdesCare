@@ -188,10 +188,33 @@ require_once ROOT . '/includes/header.php';
 ?>
 
 <!-- Context -->
-<div style="margin-bottom: 1.5rem;">
-  <h1 style="font-size: 1.8rem; font-weight: 700; color: var(--clr-primary-dk);">Analytics Dashboard</h1>
-  <p class="text-muted">Clinical data overview and service performance metrics.</p>
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 700; color: var(--clr-primary-dk);">Analytics Dashboard</h1>
+    <p class="text-muted">Clinical data overview and service performance metrics.</p>
+  </div>
+  <button onclick="window.print()" class="btn btn-outline no-print" style="display: flex; align-items: center; gap: 0.5rem;">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-10 0v5h8v-5m-9-5h.01"></path></svg>
+    Print Report
+  </button>
 </div>
+
+<style media="print">
+  .sidebar, .topbar, form, .no-print, .btn, [title="Click to expand"] small { display: none !important; }
+  .main-wrap { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+  .page-body { padding: 0 !important; }
+  .stat-grid, .chart-grid { display: flex !important; flex-direction: column !important; gap: 1.5rem !important; }
+  .stat-tile, .card { 
+      break-inside: avoid; 
+      border: 1px solid #e5e7eb !important; 
+      margin-bottom: 1.5rem !important;
+      width: 100% !important;
+      box-shadow: none !important;
+  }
+  .chart-box { height: 400px !important; min-height: 400px !important; }
+  body { background: white !important; font-size: 11pt; color: black !important; }
+  .card-title { border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+</style>
 
 <!-- Time Filter -->
 <form method="GET" class="card" style="margin-bottom: 1.4rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
