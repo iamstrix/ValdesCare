@@ -26,7 +26,20 @@ ValdesCare is a professional, offline-first clinical management system designed 
 
 ## 📥 Installation & Setup
 
-### 1. Project Placement
+### 1. Get the Source Code
+
+#### Option A: Clone via Git (Recommended)
+1. Open your terminal (Command Prompt, PowerShell, or Git Bash).
+2. Navigate to your XAMPP `htdocs` directory:
+   ```bash
+   cd C:\xampp\htdocs
+   ```
+3. Clone the repository:
+   ```bash
+   git clone https://github.com/iamstrix/ValdesCare.git final-test
+   ```
+
+#### Option B: Manual Placement
 Move the `final-test` folder into your XAMPP's `htdocs` directory:
 `C:\xampp\htdocs\ccs06-appdev\final-test`
 

@@ -70,7 +70,10 @@ require_once ROOT . '/includes/header.php';
   <div class="card">
     <div class="card-title">Encounter Information</div>
     <div class="form-grid">
-      <div class="form-group" style="grid-column: 1 / -1;">
+      <!-- ── SECTION: ADMINISTRATIVE ── -->
+      <div class="form-section">Administrative Details</div>
+
+      <div class="form-group" style="grid-column: span 2;">
         <label for="patient_id">Patient *</label>
         <select name="patient_id" id="patient_id" required>
           <option value="">— Select patient —</option>
@@ -84,11 +87,12 @@ require_once ROOT . '/includes/header.php';
       </div>
 
       <div class="form-group">
-        <label for="visit_date">Date *</label>
+        <label for="visit_date">Visit Date *</label>
         <input type="date" name="visit_date" id="visit_date"
                value="<?= htmlspecialchars($_POST['visit_date'] ?? date('Y-m-d')) ?>" 
                max="<?= date('Y-m-d') ?>" required>
       </div>
+
       <div class="form-group">
         <label for="physician_id">Attending Physician</label>
         <select name="physician_id" id="physician_id">
@@ -102,8 +106,10 @@ require_once ROOT . '/includes/header.php';
         </select>
       </div>
 
-      <!-- SECTION: Clinical Details -->
-      <div class="form-group" style="grid-column:1/-1;">
+      <!-- ── SECTION: CLINICAL ── -->
+      <div class="form-section">Clinical Assessment</div>
+
+      <div class="form-group" style="grid-column: span 2;">
         <label for="chief_complaint">Chief Complaint *</label>
         <input type="text" name="chief_complaint" id="chief_complaint" list="complaint_tags" required
                placeholder="e.g. Fever, Cough, Headache" value="<?= htmlspecialchars($_POST['chief_complaint'] ?? '') ?>">
@@ -118,14 +124,8 @@ require_once ROOT . '/includes/header.php';
         </datalist>
       </div>
 
-      <div class="form-group" style="grid-column:1/-1;">
-        <label for="complaint_details">Complaint Details</label>
-        <input type="text" name="complaint_details" id="complaint_details"
-               placeholder="e.g. Associated with vomiting, 3 days duration" value="<?= htmlspecialchars($_POST['complaint_details'] ?? '') ?>">
-      </div>
-
-      <div class="form-group" style="grid-column:1/-1;">
-        <label for="diagnosis">Diagnosis *</label>
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="diagnosis">Initial Diagnosis *</label>
         <input type="text" name="diagnosis" id="diagnosis" list="diagnosis_tags" required
                placeholder="e.g. Acute Respiratory Infection, Hypertension" value="<?= htmlspecialchars($_POST['diagnosis'] ?? '') ?>">
         <datalist id="diagnosis_tags">
@@ -138,19 +138,28 @@ require_once ROOT . '/includes/header.php';
           <option value="Allergic Rhinitis">
         </datalist>
       </div>
+
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="complaint_details">Clinical Observations / Details</label>
+        <textarea name="complaint_details" id="complaint_details" rows="2"
+                  placeholder="Additional symptoms, duration, etc."><?= htmlspecialchars($_POST['complaint_details'] ?? '') ?></textarea>
+      </div>
+
+      <!-- ── SECTION: TREATMENT ── -->
+      <div class="form-section">Treatment Plan & Remarks</div>
       
-      <div class="form-group" style="grid-column:1/-1;">
-        <label for="treatment">Treatment</label>
-        <textarea name="treatment" id="treatment" rows="3"><?= htmlspecialchars($_POST['treatment'] ?? '') ?></textarea>
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="treatment">Prescribed Treatment / Medication</label>
+        <textarea name="treatment" id="treatment" rows="3" placeholder="Dosage, instructions, etc."><?= htmlspecialchars($_POST['treatment'] ?? '') ?></textarea>
       </div>
       
-      <div class="form-group" style="grid-column:1/-1;">
-        <label for="remarks">Remarks</label>
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="remarks">Follow-up / Other Remarks</label>
         <textarea name="remarks" id="remarks" rows="2"><?= htmlspecialchars($_POST['remarks'] ?? '') ?></textarea>
       </div>
 
-      <div class="form-actions" style="grid-column:1/-1;">
-        <button type="submit" class="btn btn-primary">Save Encounter</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Encounter Record</button>
         <a href="../patients/list.php" class="btn btn-outline">Cancel</a>
       </div>
     </div>

@@ -78,40 +78,25 @@ require_once ROOT . '/includes/header.php';
     <div class="card-title">PATIENT INFORMATION RECORD</div>
 
     <div class="form-grid">
-      <div class="form-group">
-        <label for="household_no">Household no.</label>
-        <input type="text" name="household_no" id="household_no" maxlength="50"
-               value="<?= htmlspecialchars($formData['household_no'] ?? '') ?>" required>
+      <!-- ── SECTION: DEMOGRAPHICS ── -->
+      <div class="form-section">Patient Demographics</div>
+      
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="patient_name">Full Patient Name</label>
+        <input type="text" name="patient_name" id="patient_name" maxlength="150"
+               placeholder="Last Name, First Name Middle Name"
+               value="<?= htmlspecialchars($formData['patient_name'] ?? '') ?>" required>
       </div>
+
       <div class="form-group">
         <label for="dob">Date of Birth</label>
         <input type="date" name="dob" id="dob" max="<?= date('Y-m-d') ?>"
                value="<?= htmlspecialchars($formData['dob'] ?? '') ?>" required>
       </div>
-      
-      <div class="form-group">
-        <label>Category (Age Group)</label>
-        <div class="flex gap-4">
-          <label class="form-check">
-            <input type="radio" name="age_group" value="Pediatric" <?= (($formData['age_group'] ?? '') === 'Pediatric') ? 'checked' : '' ?> required> Pediatric
-          </label>
-          <label class="form-check">
-            <input type="radio" name="age_group" value="Adult" <?= (($formData['age_group'] ?? 'Adult') === 'Adult') ? 'checked' : '' ?> required> Adult
-          </label>
-          <label class="form-check">
-            <input type="radio" name="age_group" value="Geriatric" <?= (($formData['age_group'] ?? '') === 'Geriatric') ? 'checked' : '' ?> required> Geriatric
-          </label>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label for="patient_name">Patient Name</label>
-        <input type="text" name="patient_name" id="patient_name" maxlength="150"
-               value="<?= htmlspecialchars($formData['patient_name'] ?? '') ?>" required>
-      </div>
+
       <div class="form-group">
         <label>Sex</label>
-        <div class="flex gap-4">
+        <div class="flex gap-4" style="padding-top: 0.5rem;">
           <label class="form-check">
             <input type="radio" name="sex" value="Male" <?= (($formData['sex'] ?? '') === 'Male') ? 'checked' : '' ?> required> Male
           </label>
@@ -121,31 +106,61 @@ require_once ROOT . '/includes/header.php';
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="address">Address</label>
-        <input type="text" name="address" id="address" maxlength="255"
-               value="<?= htmlspecialchars($formData['address'] ?? '') ?>" required>
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Category (Age Group)</label>
+        <div class="flex gap-4" style="padding-top: 0.5rem;">
+          <label class="form-check">
+            <input type="radio" name="age_group" value="Pediatric" <?= (($formData['age_group'] ?? '') === 'Pediatric') ? 'checked' : '' ?> required> Pediatric (0-18)
+          </label>
+          <label class="form-check">
+            <input type="radio" name="age_group" value="Adult" <?= (($formData['age_group'] ?? 'Adult') === 'Adult') ? 'checked' : '' ?> required> Adult (19-59)
+          </label>
+          <label class="form-check">
+            <input type="radio" name="age_group" value="Geriatric" <?= (($formData['age_group'] ?? '') === 'Geriatric') ? 'checked' : '' ?> required> Geriatric (60+)
+          </label>
+        </div>
       </div>
+
+      <!-- ── SECTION: HOUSEHOLD & CONTACT ── -->
+      <div class="form-section">Household & Contact Information</div>
+
       <div class="form-group">
-        <label for="mobile_no">Mobile no.</label>
+        <label for="household_no">Household No.</label>
+        <input type="text" name="household_no" id="household_no" maxlength="50"
+               value="<?= htmlspecialchars($formData['household_no'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="relationship_to_head">Relationship to Head</label>
+        <input type="text" name="relationship_to_head" id="relationship_to_head" maxlength="50"
+               placeholder="e.g. Self, Spouse, Child"
+               value="<?= htmlspecialchars($formData['relationship_to_head'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="mobile_no">Mobile No.</label>
         <input type="text" name="mobile_no" id="mobile_no" maxlength="50"
                value="<?= htmlspecialchars($formData['mobile_no'] ?? '') ?>" required>
       </div>
 
       <div class="form-group">
-        <label for="mothers_maiden_name">Mother's Maiden Name (Optional)</label>
+        <label for="mothers_maiden_name">Mother's Maiden Name</label>
         <input type="text" name="mothers_maiden_name" id="mothers_maiden_name" maxlength="150"
                value="<?= htmlspecialchars($formData['mothers_maiden_name'] ?? '') ?>">
       </div>
-      <div class="form-group">
-        <label for="relationship_to_head">Relationship to Household Head</label>
-        <input type="text" name="relationship_to_head" id="relationship_to_head" maxlength="50"
-               value="<?= htmlspecialchars($formData['relationship_to_head'] ?? '') ?>" required>
+
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="address">Full Address</label>
+        <input type="text" name="address" id="address" maxlength="255"
+               value="<?= htmlspecialchars($formData['address'] ?? '') ?>" required>
       </div>
 
+      <!-- ── SECTION: PROGRAM STATUS ── -->
+      <div class="form-section">Health & Social Program Status</div>
+
       <div class="form-group">
-        <label>Indigenous People (IP) Household</label>
-        <div class="flex gap-4">
+        <label>IP Household?</label>
+        <div class="flex gap-4" style="padding-top: 0.5rem;">
           <label class="form-check">
             <input type="radio" name="is_ip" value="Yes" <?= (($formData['is_ip'] ?? '') === 'Yes') ? 'checked' : '' ?>> Yes
           </label>
@@ -156,47 +171,25 @@ require_once ROOT . '/includes/header.php';
       </div>
       
       <div class="form-group">
-        <label>National Household Targeting System (NHTS) Household</label>
-        <div class="flex gap-4">
+        <label>NHTS Household?</label>
+        <div class="flex gap-4" style="padding-top: 0.5rem;">
           <label class="form-check">
             <input type="radio" name="nhts_status" value="NHTS" <?= (($formData['nhts_status'] ?? '') === 'NHTS') ? 'checked' : '' ?>> NHTS
           </label>
           <label class="form-check">
-            <input type="radio" name="nhts_status" value="NON-NHTS" <?= (($formData['nhts_status'] ?? 'NON-NHTS') === 'NON-NHTS') ? 'checked' : '' ?>> NON-NHTS
+            <input type="radio" name="nhts_status" value="NON-NHTS" <?= (($formData['nhts_status'] ?? 'NON-NHTS') === 'NON-NHTS') ? 'checked' : '' ?>> Non-NHTS
           </label>
         </div>
       </div>
 
-      <div class="form-group" style="grid-column: 1 / -1;">
-        <label>Philhealth Member</label>
-        <div class="flex gap-4" style="align-items: center; flex-wrap: wrap;">
-          <label class="form-check">
-            <input type="radio" name="is_philhealth_member" value="Yes" <?= (($formData['is_philhealth_member'] ?? '') === 'Yes') ? 'checked' : '' ?>> Yes
-          </label>
-          <label class="form-check">
-            <input type="radio" name="is_philhealth_member" value="No" <?= (($formData['is_philhealth_member'] ?? 'No') === 'No') ? 'checked' : '' ?>> No
-          </label>
-          
-          <div style="margin-left: 1rem; display: flex; gap: 1rem; align-items: center;">
-            <label for="philhealth_no">Philhealth No.:</label>
-            <input type="text" name="philhealth_no" id="philhealth_no" maxlength="50" style="width: 150px;"
-                   value="<?= htmlspecialchars($formData['philhealth_no'] ?? '') ?>">
-            
-            <label for="philhealth_category">Category:</label>
-            <input type="text" name="philhealth_category" id="philhealth_category" maxlength="100" style="width: 150px;"
-                   value="<?= htmlspecialchars($formData['philhealth_category'] ?? '') ?>">
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" style="grid-column: 1 / -1;">
-        <label>School Status (for Ages 19 and below)</label>
-        <div class="flex gap-4">
+      <div class="form-group" style="grid-column: span 2;">
+        <label>School Status (Ages 19 and below)</label>
+        <div class="flex gap-4" style="padding-top: 0.5rem;">
           <label class="form-check">
             <input type="radio" name="school_status" value="In-School" <?= (($formData['school_status'] ?? '') === 'In-School') ? 'checked' : '' ?>> In-School
           </label>
           <label class="form-check">
-            <input type="radio" name="school_status" value="Out of School Youth" <?= (($formData['school_status'] ?? '') === 'Out of School Youth') ? 'checked' : '' ?>> Out of School Youth
+            <input type="radio" name="school_status" value="Out of School Youth" <?= (($formData['school_status'] ?? '') === 'Out of School Youth') ? 'checked' : '' ?>> OSY
           </label>
           <label class="form-check">
             <input type="radio" name="school_status" value="Not in School" <?= (($formData['school_status'] ?? 'Not in School') === 'Not in School') ? 'checked' : '' ?>> Not in School
@@ -204,8 +197,31 @@ require_once ROOT . '/includes/header.php';
         </div>
       </div>
 
-      <div class="form-actions" style="margin-top: 1.5rem; grid-column: 1 / -1;">
-        <button type="submit" class="btn btn-primary">Save Patient</button>
+      <div class="form-group" style="grid-column: span 2; background: #f9fafb; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 0.5rem;">
+        <label style="color: var(--clr-primary); font-weight: 700;">PhilHealth Information</label>
+        <div class="flex gap-4" style="align-items: center; flex-wrap: wrap; margin-top: 0.5rem;">
+          <label class="form-check">
+            <input type="radio" name="is_philhealth_member" value="Yes" <?= (($formData['is_philhealth_member'] ?? '') === 'Yes') ? 'checked' : '' ?>> Member
+          </label>
+          <label class="form-check">
+            <input type="radio" name="is_philhealth_member" value="No" <?= (($formData['is_philhealth_member'] ?? 'No') === 'No') ? 'checked' : '' ?>> Non-Member
+          </label>
+          
+          <div style="margin-left: 1rem; display: flex; gap: 1rem; align-items: center;">
+            <div class="form-group" style="flex: 1;">
+               <input type="text" name="philhealth_no" id="philhealth_no" maxlength="50" placeholder="Philhealth No." style="width: 180px;"
+                      value="<?= htmlspecialchars($formData['philhealth_no'] ?? '') ?>">
+            </div>
+            <div class="form-group" style="flex: 1;">
+               <input type="text" name="philhealth_category" id="philhealth_category" maxlength="100" placeholder="Category" style="width: 180px;"
+                      value="<?= htmlspecialchars($formData['philhealth_category'] ?? '') ?>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Patient Record</button>
         <a href="list.php" class="btn btn-outline">Cancel</a>
       </div>
     </div>
