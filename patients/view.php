@@ -33,6 +33,33 @@ $consults = $history->fetchAll();
 
 $pageTitle = htmlspecialchars($patient['patient_name']);
 $activeNav = 'patients';
+
+// ── Visit trend data (Last 12 months) ──────────────────────
+$trendSql = "
+    SELECT DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as cnt
+    FROM consultation
+    WHERE patient_id = ? AND visit_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
+    GROUP BY ym
+    ORDER BY ym ASC
+";
+$trendStmt = $pdo->prepare($trendSql);
+$trendStmt->execute([$id]);
+$trendRaw = $trendStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+// Gap-fill last 12 months to ensure a continuous line
+$trendData = [];
+for ($i = 11; $i >= 0; $i--) {
+    $m = date('Y-m', strtotime("-$i months"));
+    $label = date('M Y', strtotime("-$i months"));
+    $trendData[] = [
+        'label' => $label,
+        'cnt' => (int)($trendRaw[$m] ?? 0)
+    ];
+}
+
+$chartLabels = json_encode(array_column($trendData, 'label'));
+$chartValues = json_encode(array_column($trendData, 'cnt'));
+
 require_once ROOT . '/includes/header.php';
 ?>
 
@@ -92,6 +119,14 @@ require_once ROOT . '/includes/header.php';
   </div>
 </div>
 
+<!-- Visit Trend Visualization -->
+<div class="card">
+  <div class="card-title">Visit Frequency (Last 12 Months)</div>
+  <div class="chart-box" style="height: 220px; margin-top: 1rem;">
+    <canvas id="visitChart"></canvas>
+  </div>
+</div>
+
 <!-- Consultation history -->
 <div class="card">
   <div class="card-title">Consultation History</div>
@@ -128,7 +163,60 @@ require_once ROOT . '/includes/header.php';
       </tbody>
     </table>
   </div>
-  <?php endif; ?>
+<?php endif; ?>
 </div>
+
+<!-- Chart.js and Initialization -->
+<script src="../assets/js/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('visitChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?= $chartLabels ?>,
+            datasets: [{
+                label: 'Number of Visits',
+                data: <?= $chartValues ?>,
+                borderColor: '#004d9e',
+                backgroundColor: 'rgba(0, 77, 158, 0.1)',
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: '#004d9e',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw + ' visit' + (context.raw !== 1 ? 's' : '');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        precision: 0
+                    },
+                    grid: { color: '#f3f4f6' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+});
+</script>
 
 <?php require_once ROOT . '/includes/footer.php'; ?>
