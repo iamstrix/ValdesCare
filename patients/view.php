@@ -18,6 +18,35 @@ $stmt->execute([$id]);
 $patient = $stmt->fetch();
 if (!$patient) { header('Location: list.php'); exit; }
 
+// Filtering logic
+$timeFilter = $_GET['time_filter'] ?? 'all';
+$startDate  = $_GET['start_date'] ?? '';
+$endDate    = $_GET['end_date'] ?? '';
+$monthYear  = $_GET['month_year'] ?? ''; // For chart clicks
+
+$params = [$id];
+$visitCond = "";
+
+if ($monthYear) {
+    $dt = DateTime::createFromFormat('M Y', $monthYear);
+    if ($dt) {
+        $visitCond = " AND DATE_FORMAT(c.visit_date, '%Y-%m') = ?";
+        $params[] = $dt->format('Y-m');
+    }
+} elseif ($timeFilter === 'today') {
+    $visitCond = " AND c.visit_date = CURDATE()";
+} elseif ($timeFilter === '7days') {
+    $visitCond = " AND c.visit_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+} elseif ($timeFilter === '30days') {
+    $visitCond = " AND c.visit_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+} elseif ($timeFilter === '6months') {
+    $visitCond = " AND c.visit_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+} elseif ($timeFilter === 'custom' && $startDate && $endDate) {
+    $visitCond = " AND c.visit_date >= ? AND c.visit_date <= ?";
+    $params[] = $startDate;
+    $params[] = $endDate;
+}
+
 // Consultation history
 $history = $pdo->prepare(
     "SELECT c.consultation_id, c.visit_date, c.chief_complaint, c.diagnosis,
@@ -25,10 +54,10 @@ $history = $pdo->prepare(
             CONCAT(ph.last_name,', ',ph.first_name) AS physician
      FROM consultation c
      LEFT JOIN physician ph  ON c.physician_id = ph.physician_id
-     WHERE c.patient_id = ?
+     WHERE c.patient_id = ? $visitCond
      ORDER BY c.visit_date DESC"
 );
-$history->execute([$id]);
+$history->execute($params);
 $consults = $history->fetchAll();
 
 $pageTitle = htmlspecialchars($patient['patient_name']);
@@ -128,10 +157,45 @@ require_once ROOT . '/includes/header.php';
 </div>
 
 <!-- Consultation history -->
-<div class="card">
-  <div class="card-title">Consultation History</div>
+<div class="card" id="history-section">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.2rem;">
+    <div class="card-title" style="margin:0;">Consultation History</div>
+    
+    <form method="GET" class="flex gap-2" style="align-items:flex-end; flex-wrap:wrap;">
+      <input type="hidden" name="id" value="<?= $id ?>">
+      
+      <div class="form-group" style="margin:0;">
+        <select name="time_filter" style="padding: 0.4rem 0.6rem; font-size: 0.85rem;" onchange="toggleCustomDates(this.value)">
+          <option value="all"      <?= $timeFilter==='all'     ? 'selected':'' ?>>All Time</option>
+          <option value="today"    <?= $timeFilter==='today'   ? 'selected':'' ?>>Today</option>
+          <option value="7days"    <?= $timeFilter==='7days'   ? 'selected':'' ?>>Last 7 Days</option>
+          <option value="30days"   <?= $timeFilter==='30days'  ? 'selected':'' ?>>Last 30 Days</option>
+          <option value="6months"  <?= $timeFilter==='6months' ? 'selected':'' ?>>Last 6 Months</option>
+          <option value="custom"   <?= $timeFilter==='custom'  ? 'selected':'' ?>>Custom Range</option>
+        </select>
+      </div>
+
+      <div class="custom-date flex gap-2" style="display: <?= $timeFilter==='custom'?'flex':'none' ?>; align-items:center;">
+        <input type="date" name="start_date" value="<?= htmlspecialchars($startDate) ?>" style="padding: 0.3rem; font-size: 0.85rem;">
+        <span class="text-muted">to</span>
+        <input type="date" name="end_date" value="<?= htmlspecialchars($endDate) ?>" style="padding: 0.3rem; font-size: 0.85rem;">
+      </div>
+
+      <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+      <?php if($timeFilter !== 'all' || $monthYear): ?>
+        <a href="?id=<?= $id ?>#history-section" class="btn btn-sm btn-outline">Reset</a>
+      <?php endif; ?>
+    </form>
+  </div>
+
+  <?php if ($monthYear): ?>
+    <div class="badge badge-blue" style="margin-bottom:1rem; display:inline-block;">
+      Filtering by: <strong><?= htmlspecialchars($monthYear) ?></strong>
+    </div>
+  <?php endif; ?>
+
   <?php if (empty($consults)): ?>
-    <p class="text-muted">No consultations yet. <a href="../consultations/new.php?patient_id=<?= $id ?>">Start one now</a>.</p>
+    <p class="text-muted">No consultations found for the selected criteria. <a href="?id=<?= $id ?>">Clear filters</a>.</p>
   <?php else: ?>
   <div class="table-wrap">
     <table>
@@ -169,6 +233,10 @@ require_once ROOT . '/includes/header.php';
 <!-- Chart.js and Initialization -->
 <script src="../assets/js/chart.min.js"></script>
 <script>
+function toggleCustomDates(val) {
+    document.querySelectorAll('.custom-date').forEach(el => el.style.display = (val === 'custom') ? 'flex' : 'none');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('visitChart').getContext('2d');
     new Chart(ctx, {
@@ -184,19 +252,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 tension: 0.3,
                 fill: true,
                 pointBackgroundColor: '#004d9e',
-                pointRadius: 4,
-                pointHoverRadius: 6
+                pointRadius: 6, // Slightly larger for better clickability
+                pointHoverRadius: 8,
+                pointHitRadius: 10
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            onClick: (e, activeEls) => {
+                if (activeEls.length > 0) {
+                    const index = activeEls[0].index;
+                    // Labels are in context of this chart (last 12 months)
+                    const label = ctx.canvas.chart.data.labels[index];
+                    
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('month_year', label);
+                    url.searchParams.delete('time_filter');
+                    url.searchParams.delete('start_date');
+                    url.searchParams.delete('end_date');
+                    url.hash = 'history-section';
+                    window.location.href = url.toString();
+                }
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.raw + ' visit' + (context.raw !== 1 ? 's' : '');
+                            return context.raw + ' visit' + (context.raw !== 1 ? 's' : '') + ' (Click to filter list)';
                         }
                     }
                 }
@@ -216,6 +300,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Store chart instance on the canvas for the onClick handler to access labels easily
+    const chartInstance = Chart.getChart(ctx.canvas);
+    ctx.canvas.chart = chartInstance;
 });
 </script>
 
