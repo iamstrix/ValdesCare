@@ -109,7 +109,7 @@ require_once ROOT . '/includes/header.php';
           <?php foreach ($patients as $p): ?>
             <option value="<?= $p['patient_id'] ?>"
               <?= ((int)($formData['patient_id'] ?? 0) === (int)$p['patient_id']) ? 'selected' : '' ?>>
-              #<?= $p['patient_id'] ?> — <?= htmlspecialchars($p['name']) ?>
+              <?= htmlspecialchars($p['name']) ?>
             </option>
           <?php endforeach; ?>
         </select>
