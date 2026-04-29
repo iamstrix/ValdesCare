@@ -81,7 +81,6 @@ $recentConsults = $pdo->query(
     <table>
       <thead>
         <tr>
-          <th>#</th>
           <th>Date</th>
           <th>Patient</th>
           <th>Chief Complaint</th>
@@ -92,7 +91,6 @@ $recentConsults = $pdo->query(
       <tbody>
         <?php foreach ($recentConsults as $r): ?>
         <tr>
-          <td><?= $r['consultation_id'] ?></td>
           <td><?= htmlspecialchars($r['visit_date']) ?></td>
           <td><?= htmlspecialchars($r['patient_name']) ?></td>
           <td><?= htmlspecialchars(mb_strimwidth($r['chief_complaint'] ?? '—', 0, 30, '…')) ?></td>

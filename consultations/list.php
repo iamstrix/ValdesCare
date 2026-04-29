@@ -94,7 +94,6 @@ require_once ROOT . '/includes/header.php';
     <table>
       <thead>
         <tr>
-          <th>#</th>
           <th>Date</th>
           <th>Patient</th>
           <th>Chief Complaint</th>
@@ -106,7 +105,6 @@ require_once ROOT . '/includes/header.php';
       <tbody>
         <?php foreach ($rows as $r): ?>
         <tr>
-          <td><?= $r['consultation_id'] ?></td>
           <td style="white-space:nowrap;"><?= htmlspecialchars($r['visit_date']) ?></td>
           <td><a href="../patients/view.php?id=<?= $r['patient_id'] ?>"><?= htmlspecialchars($r['patient_name']) ?></a></td>
           <td><?= htmlspecialchars(mb_strimwidth($r['chief_complaint'] ?? '—', 0, 40, '…')) ?></td>
