@@ -17,7 +17,8 @@ $formData = $_POST ?? [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $householdNo        = trim($_POST['household_no'] ?? '');
-    $patientName        = trim($_POST['patient_name'] ?? '');
+    $firstName          = trim($_POST['first_name'] ?? '');
+    $lastName           = trim($_POST['last_name'] ?? '');
     $dob                = $_POST['dob'] ?? '';
     $ageGroup           = $_POST['age_group'] ?? 'Adult';
     $sex                = $_POST['sex'] ?? '';
@@ -33,11 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $schoolStatus       = $_POST['school_status'] ?? 'Not in School';
 
     if (!$householdNo) $errors[] = 'Household number is required.';
-    if (!$patientName) $errors[] = 'Patient Name is required.';
-    if (!$dob) $errors[] = 'Date of birth is required.';
+    if (!$firstName)   $errors[] = 'First Name is required.';
+    if (!$lastName)    $errors[] = 'Last Name is required.';
+    if (!$dob)         $errors[] = 'Date of birth is required.';
     if (!in_array($sex, ['Male','Female'])) $errors[] = 'Please select a valid sex.';
-    if (!$address) $errors[] = 'Address is required.';
-    if (!$mobileNo) $errors[] = 'Mobile number is required.';
+    if (!$address)     $errors[] = 'Address is required.';
+    if (!$mobileNo)    $errors[] = 'Mobile number is required.';
     if (!$relationship) $errors[] = 'Relationship to Household Head is required.';
     
     if ($dob > date('Y-m-d')) {
@@ -45,14 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        // Check for existing patient (including deleted ones) to prevent duplicates and data fragmentation
-        $check = $pdo->prepare("SELECT patient_id, is_deleted FROM patient WHERE patient_name = ? AND dob = ?");
-        $check->execute([$patientName, $dob]);
+        // Check for existing patient (including deleted ones) to prevent duplicates
+        $check = $pdo->prepare("SELECT patient_id, is_deleted FROM patient WHERE first_name = ? AND last_name = ? AND dob = ?");
+        $check->execute([$firstName, $lastName, $dob]);
         $existing = $check->fetch();
 
         if ($existing) {
             if ($existing['is_deleted']) {
-                // Restore the old record instead of creating a new ID
+                // Restore the old record
                 $stmt = $pdo->prepare(
                     "UPDATE patient SET 
                        is_deleted = 0, household_no = ?, age_group = ?, sex = ?, address = ?, mobile_no = ?, 
@@ -66,18 +68,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $isPhilhealth, $philhealthNo, $philhealthCat, $schoolStatus, $existing['patient_id']
                 ]);
                 $newId = $existing['patient_id'];
-                $success = "Patient <strong>#$newId</strong> was previously in the system and has been restored with the provided information. <a href='view.php?id=$newId'>View record</a>.";
+                $success = "Patient <strong>#$newId</strong> was previously in the system and has been restored. <a href='view.php?id=$newId'>View record</a>.";
             } else {
-                $errors[] = "A patient with the name '$patientName' and same Date of Birth already exists (ID: #".$existing['patient_id'].").";
+                $errors[] = "A patient with the name '$firstName $lastName' and same Date of Birth already exists (ID: #".$existing['patient_id'].").";
             }
         } else {
             $stmt = $pdo->prepare(
                 "INSERT INTO patient
-                   (household_no, patient_name, dob, age_group, sex, address, mobile_no, mothers_maiden_name, relationship_to_head, is_ip, nhts_status, is_philhealth_member, philhealth_no, philhealth_category, school_status)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                   (household_no, first_name, last_name, patient_name, dob, age_group, sex, address, mobile_no, mothers_maiden_name, relationship_to_head, is_ip, nhts_status, is_philhealth_member, philhealth_no, philhealth_category, school_status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
+            $fullName = "$firstName $lastName";
             $stmt->execute([
-                $householdNo, $patientName, $dob, $ageGroup, $sex, $address, $mobileNo, $mothersMaidenName, $relationship, $isIp, $nhtsStatus, $isPhilhealth, $philhealthNo, $philhealthCat, $schoolStatus
+                $householdNo, $firstName, $lastName, $fullName, $dob, $ageGroup, $sex, $address, $mobileNo, $mothersMaidenName, $relationship, $isIp, $nhtsStatus, $isPhilhealth, $philhealthNo, $philhealthCat, $schoolStatus
             ]);
             $newId = $pdo->lastInsertId();
             $success = "Patient registered successfully! ID: <strong>#$newId</strong> &mdash; <a href='view.php?id=$newId'>View record</a>.";
@@ -125,11 +128,18 @@ require_once ROOT . '/includes/header.php';
       <!-- ── SECTION: DEMOGRAPHICS ── -->
       <div class="form-section">Patient Demographics</div>
       
-      <div class="form-group" style="grid-column: span 2;">
-        <label for="patient_name">Full Patient Name</label>
-        <input type="text" name="patient_name" id="patient_name" maxlength="150"
-               placeholder="Last Name, First Name Middle Name"
-               value="<?= htmlspecialchars($formData['patient_name'] ?? '') ?>" required>
+      <div class="form-group">
+        <label for="last_name">Last Name *</label>
+        <input type="text" name="last_name" id="last_name" maxlength="100"
+               placeholder="e.g. Dela Cruz"
+               value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="first_name">First Name *</label>
+        <input type="text" name="first_name" id="first_name" maxlength="100"
+               placeholder="e.g. Juan"
+               value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>" required>
       </div>
 
       <div class="form-group">

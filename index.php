@@ -23,7 +23,7 @@ $stats['nhts_households']      = $pdo->query("SELECT COUNT(DISTINCT household_no
 // ── Recent consultations ───────────────────────────────────
 $recentConsults = $pdo->query(
     "SELECT c.consultation_id, c.visit_date, c.chief_complaint, c.diagnosis,
-            p.patient_name
+            CONCAT(p.last_name, ', ', p.first_name) AS patient_name
      FROM consultation c
      JOIN patient p ON c.patient_id = p.patient_id
      ORDER BY c.visit_date DESC, c.consultation_id DESC

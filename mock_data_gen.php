@@ -134,14 +134,18 @@ for ($i = 0; $i < 30; $i++) {
     $nhts = (rand(0,9) > 5) ? 'NHTS' : 'NON-NHTS';
     $isPhil = (rand(0,9) > 2) ? 'Yes' : 'No';
     $philNo = $isPhil == 'Yes' ? rand(1000000000, 9999999999) : 'NULL';
+
+    $parts = explode(' ', $name);
+    $lastName = array_pop($parts);
+    $firstName = implode(' ', $parts);
     
     // Build literal SQL values
     $pvals = sprintf(
-        "('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, 'Not in School')",
-        $hhNo, addslashes($name), $dob, $ageGrp, $sex, addslashes($address), $mobile, 'Head', $isIp, $nhts, $isPhil, ($philNo !== 'NULL' ? $philNo : ''), ($philNo !== 'NULL' ? "'Indigent'" : "NULL")
+        "('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, 'Not in School')",
+        $hhNo, addslashes($firstName), addslashes($lastName), addslashes($name), $dob, $ageGrp, $sex, addslashes($address), $mobile, 'Head', $isIp, $nhts, $isPhil, ($philNo !== 'NULL' ? $philNo : ''), ($philNo !== 'NULL' ? "'Indigent'" : "NULL")
     );
     
-    $sql .= "INSERT INTO patient (household_no, patient_name, dob, age_group, sex, address, mobile_no, relationship_to_head, is_ip, nhts_status, is_philhealth_member, philhealth_no, philhealth_category, school_status) VALUES $pvals;\n";
+    $sql .= "INSERT INTO patient (household_no, first_name, last_name, patient_name, dob, age_group, sex, address, mobile_no, relationship_to_head, is_ip, nhts_status, is_philhealth_member, philhealth_no, philhealth_category, school_status) VALUES $pvals;\n";
     
     $patientsData[] = [
         'id' => $i + 1,

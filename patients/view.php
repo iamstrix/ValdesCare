@@ -10,6 +10,7 @@ if (!$id) { header('Location: list.php'); exit; }
 
 $stmt = $pdo->prepare(
     "SELECT p.*,
+            CONCAT(p.last_name, ', ', p.first_name) AS full_name,
             TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age
      FROM patient p
      WHERE p.patient_id = ?"
@@ -60,7 +61,7 @@ $history = $pdo->prepare(
 $history->execute($params);
 $consults = $history->fetchAll();
 
-$pageTitle = htmlspecialchars($patient['patient_name']);
+$pageTitle = htmlspecialchars($patient['full_name']);
 $activeNav = 'patients';
 
 // ── Unified Chart Filter Logic ──────────────────────────────
@@ -167,7 +168,7 @@ require_once ROOT . '/includes/header.php';
   <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
     <div>
       <h2 style="font-size:1.4rem; font-weight:800; color:var(--clr-primary-dk);">
-        <?= htmlspecialchars($patient['patient_name']) ?>
+        <?= htmlspecialchars($patient['full_name']) ?>
       </h2>
       <p class="text-muted" style="margin-top:.25rem;">
         Patient #<?= $patient['patient_id'] ?> &bull; Household #<?= htmlspecialchars($patient['household_no']) ?>
@@ -229,7 +230,7 @@ require_once ROOT . '/includes/header.php';
 function saveRecordPdf() {
     const originalTitle = document.title;
     // Set a clean filename for PDF saving
-    document.title = "PatientRecord_<?= str_replace(' ', '_', $patient['patient_name']) ?>_<?= date('Y-m-d') ?>";
+    document.title = "PatientRecord_<?= str_replace(' ', '_', $patient['full_name']) ?>_<?= date('Y-m-d') ?>";
     window.print();
     document.title = originalTitle;
 }

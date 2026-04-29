@@ -17,9 +17,9 @@ $params = [];
 $where  = ['p.is_deleted = 0'];
 
 if ($search) {
-    $where[]  = "(p.patient_name LIKE ? OR p.philhealth_no LIKE ?)";
+    $where[]  = "(p.first_name LIKE ? OR p.last_name LIKE ? OR p.philhealth_no LIKE ?)";
     $like = "%$search%";
-    $params = array_merge($params, [$like, $like]);
+    $params = array_merge($params, [$like, $like, $like]);
 }
 if ($sex) {
     $where[]  = "p.sex = ?";
@@ -35,14 +35,14 @@ if ($nhts !== '') {
 }
 
 $sql = "SELECT p.patient_id,
-               p.patient_name AS full_name,
+               CONCAT(p.last_name, ', ', p.first_name) AS full_name,
                TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age,
                p.sex, p.school_status, p.philhealth_no,
                p.address, p.is_ip, p.nhts_status, p.age_group,
                (SELECT COUNT(*) FROM consultation c WHERE c.patient_id = p.patient_id) AS visit_count
         FROM patient p
         WHERE " . implode(' AND ', $where) . "
-        ORDER BY p.patient_name";
+        ORDER BY p.last_name, p.first_name";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);

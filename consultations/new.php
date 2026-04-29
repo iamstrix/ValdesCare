@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Lookup data
-$patients   = $pdo->query("SELECT patient_id, patient_name AS name FROM patient ORDER BY patient_name")->fetchAll();
+$patients   = $pdo->query("SELECT patient_id, CONCAT(last_name, ', ', first_name) AS name FROM patient ORDER BY last_name, first_name")->fetchAll();
 $physicians = $pdo->query("SELECT physician_id, CONCAT(last_name,', ',first_name,' — ',IFNULL(specialty,'General')) AS name FROM physician WHERE is_active=1 ORDER BY last_name")->fetchAll();
 
 require_once ROOT . '/includes/header.php';

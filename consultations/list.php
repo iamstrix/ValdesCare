@@ -17,14 +17,14 @@ $where  = ['c.is_deleted = 0'];
 
 if ($search) {
     $like = "%$search%";
-    $where[] = "(p.patient_name LIKE ? OR c.chief_complaint LIKE ? OR c.diagnosis LIKE ?)";
-    $params  = array_merge($params, [$like,$like,$like]);
+    $where[] = "(p.first_name LIKE ? OR p.last_name LIKE ? OR c.chief_complaint LIKE ? OR c.diagnosis LIKE ?)";
+    $params  = array_merge($params, [$like,$like,$like,$like]);
 }
 if ($dateFrom) { $where[] = "c.visit_date >= ?"; $params[] = $dateFrom; }
 if ($dateTo)   { $where[] = "c.visit_date <= ?"; $params[] = $dateTo;   }
 
 $sql = "SELECT c.consultation_id, c.visit_date, c.chief_complaint, c.diagnosis,
-               p.patient_name, p.patient_id,
+               CONCAT(p.last_name, ', ', p.first_name) AS patient_name, p.patient_id,
                CONCAT(ph.last_name,', ',ph.first_name) AS physician
         FROM consultation c
         JOIN patient p ON c.patient_id = p.patient_id

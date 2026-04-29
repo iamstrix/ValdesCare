@@ -10,7 +10,7 @@ if (!$id) { header('Location: list.php'); exit; }
 
 $stmt = $pdo->prepare(
     "SELECT c.*,
-            p.patient_name, p.patient_id, p.address,
+            CONCAT(p.last_name, ', ', p.first_name) AS patient_name, p.patient_id, p.address,
             TIMESTAMPDIFF(YEAR, p.dob, c.visit_date) AS age_at_visit,
             p.sex, p.dob,
             p.is_ip, p.nhts_status,

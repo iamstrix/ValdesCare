@@ -20,7 +20,8 @@ $success  = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $householdNo        = trim($_POST['household_no'] ?? '');
-    $patientName        = trim($_POST['patient_name'] ?? '');
+    $firstName          = trim($_POST['first_name'] ?? '');
+    $lastName           = trim($_POST['last_name'] ?? '');
     $dob                = $_POST['dob'] ?? '';
     $ageGroup           = $_POST['age_group'] ?? 'Adult';
     $sex                = $_POST['sex'] ?? '';
@@ -36,11 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $schoolStatus       = $_POST['school_status'] ?? 'Not in School';
 
     if (!$householdNo) $errors[] = 'Household number is required.';
-    if (!$patientName) $errors[] = 'Patient Name is required.';
-    if (!$dob) $errors[] = 'Date of birth is required.';
+    if (!$firstName)   $errors[] = 'First Name is required.';
+    if (!$lastName)    $errors[] = 'Last Name is required.';
+    if (!$dob)         $errors[] = 'Date of birth is required.';
     if (!in_array($sex, ['Male','Female'])) $errors[] = 'Please select a valid sex.';
-    if (!$address) $errors[] = 'Address is required.';
-    if (!$mobileNo) $errors[] = 'Mobile number is required.';
+    if (!$address)     $errors[] = 'Address is required.';
+    if (!$mobileNo)    $errors[] = 'Mobile number is required.';
     if (!$relationship) $errors[] = 'Relationship to Household Head is required.';
     
     if ($dob > date('Y-m-d')) {
@@ -48,13 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
+        $fullName = "$firstName $lastName";
         $stmt = $pdo->prepare(
             "UPDATE patient SET
-               household_no = ?, patient_name = ?, dob = ?, age_group = ?, sex = ?, address = ?, mobile_no = ?, mothers_maiden_name = ?, relationship_to_head = ?, is_ip = ?, nhts_status = ?, is_philhealth_member = ?, philhealth_no = ?, philhealth_category = ?, school_status = ?
+               household_no = ?, first_name = ?, last_name = ?, patient_name = ?, dob = ?, age_group = ?, sex = ?, address = ?, mobile_no = ?, mothers_maiden_name = ?, relationship_to_head = ?, is_ip = ?, nhts_status = ?, is_philhealth_member = ?, philhealth_no = ?, philhealth_category = ?, school_status = ?
              WHERE patient_id = ?"
         );
         $stmt->execute([
-            $householdNo, $patientName, $dob, $ageGroup, $sex, $address, $mobileNo, $mothersMaidenName, $relationship, $isIp, $nhtsStatus, $isPhilhealth, $philhealthNo, $philhealthCat, $schoolStatus, $id
+            $householdNo, $firstName, $lastName, $fullName, $dob, $ageGroup, $sex, $address, $mobileNo, $mothersMaidenName, $relationship, $isIp, $nhtsStatus, $isPhilhealth, $philhealthNo, $philhealthCat, $schoolStatus, $id
         ]);
         $success = "Patient updated successfully! <a href='view.php?id=$id'>View record</a>.";
     }
@@ -109,11 +112,18 @@ require_once ROOT . '/includes/header.php';
       <!-- ── SECTION: DEMOGRAPHICS ── -->
       <div class="form-section">Patient Demographics</div>
       
-      <div class="form-group" style="grid-column: span 2;">
-        <label for="patient_name">Full Patient Name</label>
-        <input type="text" name="patient_name" id="patient_name" maxlength="150"
-               placeholder="Last Name, First Name Middle Name"
-               value="<?= htmlspecialchars($formData['patient_name'] ?? '') ?>" required>
+      <div class="form-group">
+        <label for="last_name">Last Name *</label>
+        <input type="text" name="last_name" id="last_name" maxlength="100"
+               placeholder="e.g. Dela Cruz"
+               value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="first_name">First Name *</label>
+        <input type="text" name="first_name" id="first_name" maxlength="100"
+               placeholder="e.g. Juan"
+               value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>" required>
       </div>
 
       <div class="form-group">

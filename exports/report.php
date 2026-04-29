@@ -19,7 +19,7 @@ $patient  = null;
 $consults = [];
 if ($mode === 'patient') {
     $s = $pdo->prepare(
-        "SELECT p.*,
+        "SELECT p.*, CONCAT(p.last_name, ', ', p.first_name) AS full_name,
                 TIMESTAMPDIFF(YEAR,p.dob,CURDATE()) AS age
          FROM patient p
          WHERE p.patient_id=?"
@@ -42,7 +42,7 @@ $summaryRows = [];
 if ($mode === 'summary') {
     $s = $pdo->prepare(
         "SELECT c.visit_date,
-                p.patient_name,
+                CONCAT(p.last_name, ', ', p.first_name) AS patient_name,
                 TIMESTAMPDIFF(YEAR,p.dob,c.visit_date) AS age, p.sex,
                 p.address AS barangay, p.is_ip, p.nhts_status,
                 c.chief_complaint,
@@ -146,7 +146,7 @@ if ($mode === 'summary') {
   <!-- ═══ PATIENT REPORT ═══ -->
   <h2>Patient Record</h2>
   <div class="info-grid">
-    <div class="info-item"><label>Full Name</label><span><?= htmlspecialchars($patient['patient_name']) ?></span></div>
+    <div class="info-item"><label>Full Name</label><span><?= htmlspecialchars($patient['full_name']) ?></span></div>
     <div class="info-item"><label>Patient ID</label><span>#<?= $patient['patient_id'] ?></span></div>
     <div class="info-item"><label>Household #</label><span><?= htmlspecialchars($patient['household_no']) ?></span></div>
     <div class="info-item"><label>Birth Date</label><span><?= htmlspecialchars($patient['dob']) ?> (<?= $patient['age'] ?>y)</span></div>
