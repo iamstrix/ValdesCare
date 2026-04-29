@@ -87,17 +87,25 @@ require_once ROOT . '/includes/header.php';
       <!-- ── SECTION: ADMINISTRATIVE ── -->
       <div class="form-section">Administrative Details</div>
 
-      <div class="form-group" style="grid-column: span 2;">
-        <label for="patient_id">Patient *</label>
-        <select name="patient_id" id="patient_id" required>
-          <option value="">— Select patient —</option>
-          <?php foreach ($patients as $p): ?>
-            <option value="<?= $p['patient_id'] ?>"
-              <?= ((int)($_POST['patient_id'] ?? $prefillPat) === (int)$p['patient_id']) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($p['name']) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
+      <div class="form-group" style="grid-column: span 2; position: relative;">
+        <label for="patient_search">Patient *</label>
+        <?php
+          $currentPatientName = '';
+          $currentPatientId = (int)($_POST['patient_id'] ?? $prefillPat);
+          foreach ($patients as $p) {
+              if ((int)$p['patient_id'] === $currentPatientId) {
+                  $currentPatientName = $p['name'];
+                  break;
+              }
+          }
+        ?>
+        <input type="text" id="patient_search" autocomplete="off" required
+               placeholder="— Search and select patient —"
+               value="<?= htmlspecialchars($currentPatientName) ?>"
+               style="width: 100%; box-sizing: border-box;">
+        <input type="hidden" name="patient_id" id="patient_id" value="<?= $currentPatientId ?: '' ?>" required>
+        
+        <div id="patient_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 4px; margin-top: 4px;"></div>
       </div>
 
       <div class="form-group">
@@ -179,5 +187,68 @@ require_once ROOT . '/includes/header.php';
     </div>
   </div>
 </form>
+
+<script>
+const patientsData = <?= json_encode($patients) ?>;
+const searchInput = document.getElementById('patient_search');
+const hiddenId = document.getElementById('patient_id');
+const dropdown = document.getElementById('patient_dropdown');
+
+function renderOptions(filterText = '') {
+    dropdown.innerHTML = '';
+    const lowerFilter = filterText.toLowerCase();
+    
+    // Filter patients
+    const filtered = patientsData.filter(p => p.name.toLowerCase().includes(lowerFilter));
+    
+    if (filtered.length === 0) {
+        const noMatch = document.createElement('div');
+        noMatch.textContent = 'No matching patients found';
+        noMatch.style.padding = '8px 12px';
+        noMatch.style.color = '#777';
+        dropdown.appendChild(noMatch);
+        return;
+    }
+
+    filtered.forEach(p => {
+        const div = document.createElement('div');
+        div.textContent = p.name;
+        div.style.padding = '8px 12px';
+        div.style.cursor = 'pointer';
+        div.style.borderBottom = '1px solid #eee';
+        
+        div.addEventListener('mouseover', () => div.style.background = '#f0f4f8');
+        div.addEventListener('mouseout', () => div.style.background = '#fff');
+        
+        div.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // Prevent input blur from firing before this
+            searchInput.value = p.name;
+            hiddenId.value = p.patient_id;
+            dropdown.style.display = 'none';
+        });
+        
+        dropdown.appendChild(div);
+    });
+}
+
+searchInput.addEventListener('focus', () => {
+    renderOptions(searchInput.value);
+    dropdown.style.display = 'block';
+});
+
+searchInput.addEventListener('input', () => {
+    hiddenId.value = ''; // clear hidden id when typing
+    renderOptions(searchInput.value);
+    dropdown.style.display = 'block';
+});
+
+searchInput.addEventListener('blur', () => {
+    dropdown.style.display = 'none';
+    // If hidden input is empty, clear the search field to enforce valid selection
+    if (!hiddenId.value) {
+        searchInput.value = '';
+    }
+});
+</script>
 
 <?php require_once ROOT . '/includes/footer.php'; ?>
