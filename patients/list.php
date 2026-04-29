@@ -123,7 +123,6 @@ require_once ROOT . '/includes/header.php';
     <table>
       <thead>
         <tr>
-          <th>ID</th>
           <th>Name</th>
           <th>Age</th>
           <th>Sex</th>
@@ -138,7 +137,6 @@ require_once ROOT . '/includes/header.php';
       <tbody>
         <?php foreach ($patients as $p): ?>
         <tr>
-          <td><?= $p['patient_id'] ?></td>
           <td class="bold"><?= htmlspecialchars($p['full_name']) ?></td>
           <td><?= $p['age'] ?></td>
           <td><?= htmlspecialchars($p['sex']) ?></td>
