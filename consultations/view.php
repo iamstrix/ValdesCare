@@ -25,7 +25,7 @@ $stmt->execute([$id]);
 $c = $stmt->fetch();
 if (!$c) { header('Location: list.php'); exit; }
 
-$pageTitle = 'Encounter Details';
+$pageTitle = 'Encounter #' . $id;
 $activeNav = 'consult-list';
 require_once ROOT . '/includes/header.php';
 ?>
@@ -39,7 +39,7 @@ require_once ROOT . '/includes/header.php';
 <!-- Print header -->
 <div style="display:none;" class="print-header">
   <h2 style="text-align:center; font-size:1rem;">AUF DON EMILIANO J. VALDES MEDICAL CLINIC</h2>
-  <p style="text-align:center; font-size:.85rem;">Consultation Record · <?= htmlspecialchars($c['visit_date']) ?></p>
+  <p style="text-align:center; font-size:.85rem;">Consultation Record #<?= $id ?> · <?= htmlspecialchars($c['visit_date']) ?></p>
   <hr>
 </div>
 
