@@ -65,12 +65,28 @@ $formatYM = "";
 $periodCount = 0;
 
 if ($timeFilter === 'today') {
-    $start = (clone $now)->setTime(8, 0);
-    $end = (clone $now)->setTime(13, 0);
+    // Fetch dynamic settings
+    $settings = $pdo->query("SELECT setting_key, setting_value FROM settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+    $clinicOpen = $settings['clinic_open'] ?? '08:30';
+    $clinicClose = $settings['clinic_close'] ?? '12:00';
+
+    $openDT = new DateTime($clinicOpen);
+    $closeDT = new DateTime($clinicClose);
+    $startDT = (clone $openDT)->modify('-30 minutes');
+    $endDT = (clone $closeDT)->modify('+30 minutes');
+
+    $startHour = (int)$startDT->format('G');
+    $endHour = (int)$endDT->format('G');
+    // If closing buffer ends on a partial hour (e.g. 12:30), round up to show the full hour block
+    if ((int)$endDT->format('i') > 0) $endHour++;
+
+    $start = (clone $now)->setTime($startHour, 0);
+    $end = (clone $now)->setTime($endHour, 0);
+    
     $interval = new DateInterval('PT1H');
     $formatLabel = "h:00 A";
     $formatYM = "G"; // 0-23
-    $periodCount = 6;
+    $periodCount = ($endHour - $startHour) + 1;
     $chartLineTitle = "Hourly Visits (Today)";
 } elseif ($timeFilter === '7days') {
     $start = (clone $now)->modify('-6 days');
