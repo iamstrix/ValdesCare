@@ -106,12 +106,11 @@ require_once ROOT . '/includes/header.php';
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>ID</th><th>Name</th><th>Specialty</th><th>License #</th><th>Status</th><th>Action</th></tr>
+        <tr><th>Name</th><th>Specialty</th><th>License #</th><th>Status</th><th>Action</th></tr>
       </thead>
       <tbody>
         <?php foreach ($physicians as $ph): ?>
         <tr>
-          <td><?= $ph['physician_id'] ?></td>
           <td class="bold">Dr. <?= htmlspecialchars($ph['last_name'].', '.$ph['first_name']) ?></td>
           <td><?= htmlspecialchars($ph['specialty'] ?? '—') ?></td>
           <td><?= htmlspecialchars($ph['license_no'] ?? '—') ?></td>

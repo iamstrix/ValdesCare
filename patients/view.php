@@ -170,7 +170,7 @@ require_once ROOT . '/includes/header.php';
         <?= htmlspecialchars($patient['patient_name']) ?>
       </h2>
       <p class="text-muted" style="margin-top:.25rem;">
-        Patient #<?= $patient['patient_id'] ?> &bull; Household #<?= htmlspecialchars($patient['household_no']) ?>
+        Household #<?= htmlspecialchars($patient['household_no']) ?>
         &bull; <?= $patient['age'] ?> years old &bull; <?= htmlspecialchars($patient['sex']) ?>
         &bull; <span class="badge badge-blue"><?= htmlspecialchars($patient['age_group']) ?></span>
       </p>
