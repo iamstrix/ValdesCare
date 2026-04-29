@@ -65,12 +65,12 @@ $formatYM = "";
 $periodCount = 0;
 
 if ($timeFilter === 'today') {
-    $start = (clone $now)->setTime(0, 0);
-    $end = (clone $now)->setTime(23, 59);
+    $start = (clone $now)->setTime(8, 0);
+    $end = (clone $now)->setTime(13, 0);
     $interval = new DateInterval('PT1H');
     $formatLabel = "h:00 A";
     $formatYM = "G"; // 0-23
-    $periodCount = 24;
+    $periodCount = 6;
     $chartLineTitle = "Hourly Visits (Today)";
 } elseif ($timeFilter === '7days') {
     $start = (clone $now)->modify('-6 days');
