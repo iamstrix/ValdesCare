@@ -248,17 +248,22 @@ function saveDashboardPdf() {
   .sidebar, .topbar, form, .no-print, .btn, [title="Click to expand"] small { display: none !important; }
   .main-wrap { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
   .page-body { padding: 0 !important; }
-  .stat-grid, .chart-grid { display: flex !important; flex-direction: column !important; gap: 1.5rem !important; }
-  .stat-tile, .card { 
+  
+  .stat-grid { display: flex !important; flex-direction: row !important; gap: 1rem !important; flex-wrap: wrap !important; margin-bottom: 1rem !important; }
+  .stat-tile { width: calc(33.333% - 0.67rem) !important; margin-bottom: 0 !important; break-inside: avoid; border: 1px solid #e5e7eb !important; box-shadow: none !important; }
+
+  .chart-grid { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 1rem !important; margin-bottom: 1rem !important; }
+  .card { 
       break-inside: avoid; 
       border: 1px solid #e5e7eb !important; 
-      margin-bottom: 1.5rem !important;
-      width: 100% !important;
+      width: calc(50% - 0.5rem) !important;
       box-shadow: none !important;
+      margin-bottom: 0 !important;
   }
-  .chart-box { height: 400px !important; min-height: 400px !important; }
+  .chart-box { height: 260px !important; min-height: 260px !important; }
+  
   body { background: white !important; font-size: 11pt; color: black !important; }
-  .card-title { border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+  .card-title { border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem; font-size: 12pt !important; }
 </style>
 
 <!-- Time Filter -->
