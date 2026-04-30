@@ -110,6 +110,28 @@ CREATE TABLE IF NOT EXISTS physician (
     PRIMARY KEY (physician_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS chief_complaints (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS diagnoses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO chief_complaints (name) VALUES
+    ('Fever'),
+    ('Cough'),
+    ('Headache');
+
+INSERT INTO diagnoses (name) VALUES
+    ('Common Cold'),
+    ('Hypertension'),
+    ('Acid Reflux (GERD)');
+    
 CREATE TABLE IF NOT EXISTS consultation (
     consultation_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
     patient_id          INT UNSIGNED NOT NULL,

@@ -765,3 +765,129 @@ html {
   color: #fff !important;
   text-decoration: none !important;
 }
+
+/* Autocomplete Wrapper */
+.autocomplete-wrapper {
+    position: relative;
+    display: block;
+}
+
+/* Dropdown Container */
+.autocomplete-items {
+    position: absolute;
+    z-index: 99; 
+    top: calc(100% + 4px); /* Adds a slight, clean gap below the input */
+    left: 0;
+    right: 0;
+    background-color: var(--clr-surface); 
+    color: var(--clr-text-muted);
+    border: 1px solid var(--clr-border); 
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    font-family: var(--font-sans);
+}
+
+/* * Individual Suggestion Items 
+ * Changed from "div" to ".autocomplete-item-row" so it doesn't 
+ * accidentally style the nested Action Button containers 
+ */
+.autocomplete-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--clr-border);
+    border-left: 3px solid transparent; /* PREVENTS JANK */
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* Highlighted Match (The letters the user typed) */
+.autocomplete-item-row strong {
+    color: var(--clr-text);
+    font-weight: 700;
+}
+
+/* Hover & Active States */
+.autocomplete-item-row:hover, 
+.autocomplete-active {
+    font-weight: 700;
+    background-color: var(--clr-primary-lt) !important; 
+    color: var(--clr-primary-dk) !important; 
+    border-left-color: var(--clr-primary); 
+}
+
+/* =========================================
+   INLINE ACTIONS (Edit / Delete)
+   ========================================= */
+
+/* Container for the Action Buttons */
+.autocomplete-actions {
+    display: flex;
+    gap: 6px;
+    opacity: 0; /* Hidden by default for a clean look */
+    transition: opacity 0.2s ease;
+}
+
+/* Reveal buttons smoothly when hovering over the row */
+.autocomplete-item-row:hover .autocomplete-actions {
+    opacity: 1;
+}
+
+/* Button Styling */
+.autocomplete-btn-edit, 
+.autocomplete-btn-delete {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: normal;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: var(--clr-text-muted);
+    transition: all 0.15s ease;
+}
+
+/* Button Hover States mapped to your palette */
+.autocomplete-btn-edit:hover {
+    background-color: var(--clr-info);
+    color: var(--clr-surface);
+    border-color: var(--clr-info);
+}
+
+.autocomplete-btn-delete:hover {
+    background-color: var(--clr-danger);
+    color: var(--clr-surface);
+    border-color: var(--clr-danger);
+}
+
+/* =========================================
+   ADD NEW BUTTON (Constant Bottom Item)
+   ========================================= */
+
+.autocomplete-add-new {
+    padding: 12px 16px;
+    cursor: pointer;
+    text-align: center;
+    color: var(--clr-primary);
+    background-color: var(--clr-bg); 
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-left: 3px solid transparent; /* Keeps layout flush with rows above it */
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Emphasize the word they are about to add */
+.autocomplete-add-new strong {
+    color: var(--clr-primary-dk);
+}
+
+.autocomplete-add-new:hover {
+    background-color: var(--clr-primary);
+    color: var(--clr-surface);
+}
+
+.autocomplete-add-new:hover strong {
+    color: var(--clr-surface);
+}
