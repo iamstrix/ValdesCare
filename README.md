@@ -34,12 +34,18 @@ ValdesCare is a professional, offline-first clinical management system designed 
 1. Open your terminal (Command Prompt, PowerShell, or Git Bash).
 2. Navigate to your XAMPP `htdocs` directory:
    ```bash
-   cd C:\xampp\htdocs
+   cd C:\xampp\htdocs\ccs06-appdev
    ```
+   > ⚠️ If the `ccs06-appdev` folder doesn't exist yet, create it first:
+   > ```bash
+   > mkdir C:\xampp\htdocs\ccs06-appdev
+   > cd C:\xampp\htdocs\ccs06-appdev
+   > ```
 3. Clone the repository:
    ```bash
    git clone https://github.com/iamstrix/ValdesCare.git final-test
    ```
+4. The app will be accessible at: `http://localhost/ccs06-appdev/final-test/`
 
 #### Option B: Manual Placement
 Move the `final-test` folder into your XAMPP's `htdocs` directory:
@@ -50,141 +56,14 @@ The system requires a MySQL database named `valdescare`. Follow these steps to s
 
 1.  Open **XAMPP Control Panel** and start **Apache** and **MySQL**.
 2.  Go to **phpMyAdmin** in your browser: `http://localhost/phpmyadmin`.
-3.  Click on the **New** button in the left sidebar.
-4.  Enter `valdescare` as the database name and click **Create**.
-5.  Click on the **SQL** tab at the top.
-6.  **Copy and paste** the SQL code below into the box and click **Go**.
+3.  Click on the **Import** tab at the top.
+4.  Click **Choose File** and select the `valdescare_schema.sql` file from the cloned project folder:
+    `C:\xampp\htdocs\ccs06-appdev\final-test\valdescare_schema.sql`
+5.  Click **Go**.
 
-#### 📋 Initialization SQL Query
-```sql
--- ============================================================
--- ValdesCare Clinical Decision Support System
--- Database Schema
--- ============================================================
+This will automatically create the `valdescare` database, all tables, views, foreign keys, and seed the initial data in one step.
 
-CREATE TABLE IF NOT EXISTS patient (
-    patient_id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    household_no            VARCHAR(50)  NOT NULL,
-    patient_name            VARCHAR(150) NOT NULL,
-    dob                     DATE         NOT NULL COMMENT 'Date of birth',
-    age_group               ENUM('Pediatric', 'Adult', 'Geriatric') NOT NULL DEFAULT 'Adult',
-    sex                     ENUM('Male','Female') NOT NULL,
-    address                 VARCHAR(255) NOT NULL,
-    mobile_no               VARCHAR(50)  NOT NULL,
-    mothers_maiden_name     VARCHAR(150) NULL DEFAULT NULL,
-    relationship_to_head    VARCHAR(50)  NOT NULL,
-    is_ip                   ENUM('Yes','No') NOT NULL DEFAULT 'No',
-    nhts_status             ENUM('NHTS','NON-NHTS') NOT NULL DEFAULT 'NON-NHTS',
-    is_philhealth_member    ENUM('Yes','No') NOT NULL DEFAULT 'No',
-    philhealth_no           VARCHAR(50)  NULL DEFAULT NULL,
-    philhealth_category     VARCHAR(100) NULL DEFAULT NULL,
-    school_status           ENUM('In-School','Out of School Youth','Not in School') NOT NULL DEFAULT 'Not in School',
-    is_deleted              TINYINT(1) NOT NULL DEFAULT 0,
-    created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (patient_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS category (
-    category_id    TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name           VARCHAR(60)      NOT NULL,
-    description    VARCHAR(255)         NULL DEFAULT NULL,
-    PRIMARY KEY (category_id),
-    UNIQUE KEY uq_category_name (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT IGNORE INTO category (name, description) VALUES
-    ('Pediatrics',          'Patients aged 0–18 years'),
-    ('Internal Medicine',   'Adult general medicine'),
-    ('OB-GYN',              'Obstetrics and Gynecology'),
-    ('Dental',              'Oral health services'),
-    ('General Surgery',     'Minor surgical procedures');
-
-CREATE TABLE IF NOT EXISTS physician (
-    physician_id   SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    first_name     VARCHAR(80)       NOT NULL,
-    last_name      VARCHAR(80)       NOT NULL,
-    specialty      VARCHAR(100)          NULL DEFAULT NULL,
-    license_no     VARCHAR(30)           NULL DEFAULT NULL,
-    is_active      TINYINT(1)        NOT NULL DEFAULT 1,
-    is_deleted     TINYINT(1)        NOT NULL DEFAULT 0,
-    PRIMARY KEY (physician_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS chief_complaints (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS diagnoses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO chief_complaints (name) VALUES
-    ('Fever'),
-    ('Cough'),
-    ('Headache');
-
-INSERT INTO diagnoses (name) VALUES
-    ('Common Cold'),
-    ('Hypertension'),
-    ('Acid Reflux (GERD)');
-    
-CREATE TABLE IF NOT EXISTS consultation (
-    consultation_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    patient_id          INT UNSIGNED NOT NULL,
-    visit_date          DATE         NOT NULL,
-    chief_complaint     VARCHAR(150) NULL DEFAULT NULL,
-    complaint_details   TEXT         NULL DEFAULT NULL,
-    diagnosis           VARCHAR(150) NULL DEFAULT NULL,
-    treatment           TEXT         NULL DEFAULT NULL,
-    remarks             TEXT         NULL DEFAULT NULL,
-    physician_id        SMALLINT UNSIGNED NULL DEFAULT NULL,
-    is_deleted          TINYINT(1)   NOT NULL DEFAULT 0,
-    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (consultation_id),
-    CONSTRAINT fk_consult_patient FOREIGN KEY (patient_id) REFERENCES patient (patient_id) ON DELETE CASCADE,
-    CONSTRAINT fk_consult_physician FOREIGN KEY (physician_id) REFERENCES physician (physician_id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE OR REPLACE VIEW v_patient_full AS
-SELECT
-    patient_id,
-    patient_name AS full_name,
-    dob,
-    TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age,
-    sex,
-    school_status,
-    philhealth_no,
-    address AS full_address,
-    is_ip,
-    nhts_status
-FROM patient;
-
-CREATE OR REPLACE VIEW v_consultation_full AS
-SELECT
-    c.consultation_id,
-    c.visit_date,
-    p.patient_id,
-    p.patient_name,
-    TIMESTAMPDIFF(YEAR, p.dob, c.visit_date) AS age_at_visit,
-    p.sex,
-    p.is_ip,
-    p.nhts_status,
-    CONCAT(ph.last_name, ', ', ph.first_name) AS physician_name,
-    c.chief_complaint,
-    c.complaint_details,
-    c.diagnosis,
-    c.treatment
-FROM consultation c
-JOIN patient      p   ON c.patient_id    = p.patient_id
-LEFT JOIN physician   ph  ON c.physician_id  = ph.physician_id
-WHERE c.is_deleted = 0;
-```
+> **Note:** If you prefer to create the database manually first, go to phpMyAdmin → click **New** → name it `valdescare` → click **Create** — then follow steps 3–5 above.
 
 ---
 

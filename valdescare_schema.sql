@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS patient (
     philhealth_no           VARCHAR(50)  NULL DEFAULT NULL COMMENT 'PhilHealth identification number',
     philhealth_category     VARCHAR(100) NULL DEFAULT NULL,
     school_status           ENUM('In-School','Out of School Youth','Not in School') NOT NULL DEFAULT 'Not in School',
+    is_deleted              TINYINT(1)   NOT NULL DEFAULT 0,
     created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -115,6 +116,23 @@ CREATE TABLE IF NOT EXISTS consultation (
     INDEX idx_visit_date    (visit_date),
     INDEX idx_patient_date  (patient_id, visit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLE: settings
+-- Key-value store for system-wide configuration (e.g. clinic hours)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS settings (
+    setting_key     VARCHAR(100) NOT NULL,
+    setting_value   VARCHAR(255) NOT NULL,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed default clinic hours
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
+    ('clinic_open',  '08:30'),
+    ('clinic_close', '17:00');
 
 -- ============================================================
 -- TABLE: chief_complaints
