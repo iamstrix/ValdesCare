@@ -139,8 +139,9 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
 -- Autosuggest dictionary for chief complaints.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS chief_complaints (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
+    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name       VARCHAR(255) NOT NULL,
+    is_deleted TINYINT(1)   NOT NULL DEFAULT 0 COMMENT 'Soft-delete flag',
     PRIMARY KEY (id),
     UNIQUE KEY uq_cc_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -150,8 +151,9 @@ CREATE TABLE IF NOT EXISTS chief_complaints (
 -- Autosuggest dictionary for diagnoses.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS diagnoses (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
+    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name       VARCHAR(255) NOT NULL,
+    is_deleted TINYINT(1)   NOT NULL DEFAULT 0 COMMENT 'Soft-delete flag',
     PRIMARY KEY (id),
     UNIQUE KEY uq_diag_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

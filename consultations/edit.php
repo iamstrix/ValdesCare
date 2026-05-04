@@ -178,6 +178,6 @@ require_once ROOT . '/includes/header.php';
     </div>
   </div>
 </form>
-<script src="../assets/js/init_autocomplete.js"></script>
+<script src="../assets/js/init_autocomplete.js?v=<?= time() ?>"></script>
 
 <?php require_once ROOT . '/includes/footer.php'; ?>
